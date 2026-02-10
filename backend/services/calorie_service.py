@@ -1,24 +1,29 @@
-import os
-import openai
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
-def estimate_calories(food_description: str) -> str:
+def estimate_calories(food: str) -> str:
     """
-    Sends food description to OpenAI and returns calorie estimate.
+    Temporary fallback calorie estimator
+    (used when OpenAI quota is unavailable)
     """
-    try:
-        response = openai.chat.completions.create(
-            model="gpt-3.5-turbo",  # modern, fast, low-cost
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant that estimates calories for food."},
-                {"role": "user", "content": f"Estimate the calories for the following food: {food_description}. Provide a concise answer in kcal."}
-            ],
-            max_tokens=50
-        )
-        return response.choices[0].message["content"].strip()
-    except Exception as e:
-        return f"Error: {e}"
+
+    food = food.lower()
+
+    estimates = {
+        "egg": 70,
+        "eggs": 70,
+        "toast": 80,
+        "bread": 80,
+        "rice": 200,
+        "chicken": 250,
+        "apple": 95,
+        "banana": 105
+    }
+
+    total = 0
+
+    for key, calories in estimates.items():
+        if key in food:
+            total += calories
+
+    if total == 0:
+        return "Unable to estimate calories for this meal."
+
+    return f"Estimated calories: {total}"
