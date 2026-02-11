@@ -19,6 +19,7 @@ app.add_middleware(
 from datetime import datetime
 
 food_logs = []
+meals = []
 
 @app.get("/")
 def root():
@@ -46,3 +47,7 @@ def log_food(food: str, quantity: int = 1):
 @app.get("/food-logs")
 def get_food_logs():
     return food_logs
+
+@app.get("/meals")
+def get_meals():
+    return meals

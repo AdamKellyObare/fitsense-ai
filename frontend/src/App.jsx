@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FoodInput from "./components/FoodInput";
 import GoalSelector from "./components/GoalSelector";
 import MealHistory from "./components/MealHistory";
@@ -9,8 +9,26 @@ function App() {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [meals, setMeals] = useState([]);
 
+  // ✅ Load meals from localStorage safely
+  const [meals, setMeals] = useState(() => {
+    const saved = localStorage.getItem("fitsense_meals");
+    if (!saved) return [];
+
+    try {
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // ✅ Save meals to localStorage whenever meals change
+  useEffect(() => {
+    localStorage.setItem("fitsense_meals", JSON.stringify(meals));
+  }, [meals]);
+
+  // ✅ Analyze meal
   const estimateCalories = async () => {
     if (!food) return;
 
@@ -18,34 +36,53 @@ function App() {
     setError("");
     setResult("");
 
-    // Create new meal and update state
+    // Base calories (mock AI for now)
+    const baseCalories = Math.floor(Math.random() * 500) + 200;
+
+    // Adjust based on goal
+    let adjustedCalories = baseCalories;
+
+    if (goal === "cutting") {
+      adjustedCalories = Math.round(baseCalories * 0.85);
+    } else if (goal === "bulking") {
+      adjustedCalories = Math.round(baseCalories * 1.15);
+    }
+
     const newMeal = {
       food,
       goal,
+      calories: adjustedCalories,
       timestamp: new Date().toISOString(),
     };
-    setMeals([newMeal, ...meals]); // prepend so newest meal appears on top
 
-    try {
-      // MOCK AI calories
-      const mockCalories = Math.floor(Math.random() * 500) + 100;
-      setResult(`Estimated calories for ${food}: ${mockCalories} kcal`);
+    // Update meals state ONCE
+    setMeals(prevMeals => [...prevMeals, newMeal]);
 
-      // REAL backend call (optional)
-      /*
-      const response = await fetch(
-        `http://127.0.0.1:8000/estimate-calories/?food=${encodeURIComponent(
-          food
-        )}&goal=${goal}`
-      );
-      const data = await response.json();
-      setResult(data.message);
-      */
-    } catch (err) {
-      setError("AI is currently unavailable. Please try again shortly.");
-    } finally {
-      setLoading(false);
-    }
+    // Show result
+    setResult(
+      `Estimated calories for ${food}: ${adjustedCalories} kcal (${goal})`
+    );
+
+    setLoading(false);
+  };
+
+  // ✅ Calculate today's calories
+  const today = new Date().toDateString();
+
+  const todaysMeals = meals.filter(
+    meal => new Date(meal.timestamp).toDateString() === today
+  );
+
+  const totalCaloriesToday = todaysMeals.reduce(
+    (sum, meal) => sum + (meal.calories || 0),
+    0
+  );
+
+  // ✅ Delete meal
+  const deleteMeal = (indexToDelete) => {
+    setMeals(prevMeals =>
+      prevMeals.filter((_, index) => index !== indexToDelete)
+    );
   };
 
   return (
@@ -55,7 +92,12 @@ function App() {
         Smart calorie insights based on your fitness goal
       </p>
 
+      <div style={styles.totalBox}>
+        🔥 Today’s Total: {totalCaloriesToday} kcal
+      </div>
+
       <GoalSelector goal={goal} setGoal={setGoal} />
+
       <FoodInput
         food={food}
         setFood={setFood}
@@ -66,8 +108,7 @@ function App() {
       {result && <div style={styles.result}>{result}</div>}
       {error && <div style={styles.error}>{error}</div>}
 
-      {/* Render meal history */}
-      <MealHistory meals={meals} />
+      <MealHistory meals={meals} onDelete={deleteMeal} />
     </div>
   );
 }
@@ -88,26 +129,13 @@ const styles = {
     color: "#666",
     marginBottom: "25px",
   },
-  select: {
-    width: "100%",
+  totalBox: {
+    marginBottom: "20px",
     padding: "12px",
-    fontSize: "16px",
-    marginBottom: "15px",
-  },
-  input: {
-    width: "100%",
-    padding: "12px",
-    fontSize: "16px",
-    marginBottom: "15px",
-  },
-  button: {
-    width: "100%",
-    padding: "12px",
-    fontSize: "16px",
-    cursor: "pointer",
-    backgroundColor: "#111",
+    backgroundColor: "#000",
     color: "#fff",
-    border: "none",
+    fontWeight: "bold",
+    borderRadius: "8px",
   },
   result: {
     marginTop: "25px",
