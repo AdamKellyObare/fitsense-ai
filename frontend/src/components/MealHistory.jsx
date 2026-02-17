@@ -21,12 +21,12 @@ function MealHistory({ meals, onDelete }) {
           <p>{new Date(meal.timestamp).toLocaleString()}</p>
 
           {meal.analysis && (
-            <div style={{ marginTop: "10px" }}>
-              <p><strong>Calories:</strong> {meal.analysis.calories} kcal</p>
-              <p>Protein: {meal.analysis.protein}g</p>
-              <p>Carbs: {meal.analysis.carbs}g</p>
-              <p>Fat: {meal.analysis.fat}g</p>
-            </div>
+          <div style={{ marginTop: "10px" }}>
+            <p><strong>Calories:</strong> {meal.calories} kcal</p>
+            <p>Protein: {meal.protein}g</p>
+            <p>Carbs: {meal.carbs}g</p>
+            <p>Fat: {meal.fat}g</p>
+          </div>
           )}
 
           <button
