@@ -5,6 +5,9 @@ import MealHistory from "./components/MealHistory";
 import WeeklySummary from "./components/WeeklySummary";
 import Sidebar from "./components/Sidebar";
 import TopBar from "./components/TopBar";
+import StatCard from "./components/StatCard";
+import ThemeToggle from "./components/ThemeToggle";
+
 
 function App() {
   const [food, setFood] = useState("");
@@ -12,6 +15,12 @@ function App() {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // Theme mode
+const [darkMode, setDarkMode] = useState(() => {
+  const saved = localStorage.getItem("fitsense_theme");
+  return saved ? JSON.parse(saved) : true;
+});
+
 
   // Load daily goal from localStorage
   const [dailyGoal, setDailyGoal] = useState(() => {
@@ -37,10 +46,17 @@ function App() {
     localStorage.setItem("fitsense_meals", JSON.stringify(meals));
   }, [meals]);
 
+  // Save theme preference
+useEffect(() => {
+  localStorage.setItem("fitsense_theme", JSON.stringify(darkMode));
+}, [darkMode]);
+
+
   // Save daily goal
   useEffect(() => {
     localStorage.setItem("fitsense_daily_goal", dailyGoal);
   }, [dailyGoal]);
+
 
   // Analyze meal
   const estimateCalories = async () => {
@@ -124,27 +140,24 @@ function App() {
       prevMeals.filter((_, index) => index !== indexToDelete)
     );
   };
+  const styles = getStyles(darkMode);
 
 return (
   <div style={styles.page}>
-      <div style={styles.appLayout}>
-    
-    <Sidebar />
+    <div style={styles.sidebarWrapper}>
+      <Sidebar />
+    </div>
 
     <div style={styles.mainArea}>
       <TopBar />
 
-      <div style={styles.page}>
-        
-        <div style={styles.leftPanel}>
-          <WeeklySummary meals={meals} />
-        </div>
+      {/* DASHBOARD CONTENT */}
+{/* DASHBOARD CONTENT */}
+<div style={styles.contentArea}>
+  <div style={styles.dashboardWrapper}>
+  <div style={{ ...styles.dashboard, ...styles.mobileStack }}>
 
-        <div style={styles.container}></div>
-
-
-    
-    {/* LEFT — Weekly Chart */}
+    {/* LEFT — Chart */}
     <div style={styles.leftPanel}>
       <WeeklySummary meals={meals} />
     </div>
@@ -152,15 +165,52 @@ return (
     {/* RIGHT — Main App */}
     <div style={styles.container}>
       <h1 style={styles.title}>FitSense AI</h1>
+
+      <div style={{ marginBottom: "20px" }}>
+  <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
+</div>
+
+
       <p style={styles.subtitle}>
         Smart calorie insights based on your fitness goal
       </p>
 
-      <div style={styles.macroBox}>
-        <p>🥩 Protein: {totalProteinToday} g</p>
-        <p>🍚 Carbs: {totalCarbsToday} g</p>
-        <p>🥑 Fat: {totalFatToday} g</p>
-      </div>
+<div style={styles.statsRow}>
+
+  <StatCard
+    label="Calories"
+    value={totalCaloriesToday}
+    unit="kcal"
+    icon="🔥"
+    color="#00ff87"
+  />
+
+  <StatCard
+    label="Protein"
+    value={totalProteinToday}
+    unit="g"
+    icon="🥩"
+    color="#60efff"
+  />
+
+  <StatCard
+    label="Carbs"
+    value={totalCarbsToday}
+    unit="g"
+    icon="🍚"
+    color="#facc15"
+  />
+
+  <StatCard
+    label="Fat"
+    value={totalFatToday}
+    unit="g"
+    icon="🥑"
+    color="#fb7185"
+  />
+
+</div>
+
 
       <div style={styles.totalBox}>
         🔥 Today’s Total: {totalCaloriesToday} / {numericGoal || 0} kcal
@@ -205,80 +255,183 @@ return (
     </div>
 
   </div>
-          </div>
 
-      </div>
+</div>
+
     </div>
-
-//   </div>
-// );
+  </div>
+  </div>
 
 );
 
+
 }
 
-const styles = {
+const getStyles = (darkMode) => ({
   /* FULL SCREEN PAGE */
-  page: {
-    display: "flex",
-    width: "100vw",
-    minHeight: "100vh",
-    background: "#1b1b1bff",
-    color: "white",
-    flexWrap: "wrap",
-  },
+page: {
+  display: "flex",
+  flexDirection: "column",
+  width: "100vw",
+  minHeight: "100vh",
+  background: darkMode ? "#0f172a" : "#f3f4f6",
+  color: darkMode ? "white" : "#111",
+  transition: "0.3s",
+},
 
+dashboardWrapper: {
+  border: "3px solid red"
+},
+
+
+appContainer: {
+  minHeight: "100vh",
+  padding: "30px",
+  background: darkMode
+    ? "linear-gradient(135deg,#0f172a,#1e293b)"
+    : "linear-gradient(135deg,#dbeafe,#f0f9ff)"
+},
+
+statsRow: {
+  display: "flex",
+  gap: "15px",
+  marginTop: "20px",
+  marginBottom: "20px",
+  flexWrap: "wrap",
+},
+
+
+glassCard: {
+  background: "rgba(255,255,255,0.08)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  borderRadius: "16px",
+  border: "1px solid rgba(255,255,255,0.15)",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+},
+
+
+  topPanel: {
+    width: "100%",
+    maxWidth: "900px",
+    margin: "0 auto",
+  },
   appLayout: {
   display: "flex",
 },
 
 mainArea: {
   flex: 1,
+  display: "flex",
+  flexDirection: "column",
+  height: "100vh",
+},
+
+contentArea: {
+  flex: 1,
+  overflowY: "auto",
+  padding: "20px",
+},
+
+card: {
+  background: "#242424",
+  borderRadius: "12px",
+  padding: "18px",
+  boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
 },
 
 
+dashboard: {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "24px",
+  padding: "20px",
+},
+
+
+
+mobileStack: {
+  gridTemplateColumns: window.innerWidth < 900 ? "1fr" : "1fr 1fr",
+},
+
+
+
+
   /* LEFT SIDE (CHART) */
-  leftPanel: {
-    flex: "1 1 40%",
-    padding: "40px",
-    minWidth: "300px",
-  },
+leftPanel: {
+  padding: "25px",
+  borderRadius: "18px",
+  background: "rgba(255,255,255,0.05)",
+  border: "1px solid rgba(255,255,255,0.08)",
+},
+
+
 
   /* RIGHT SIDE (APP) */
-  container: {
-    flex: "1 1 60%",
-    padding: "40px",
-    fontFamily: "Arial, sans-serif",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
+container: {
+  padding: "30px",
+  textAlign: "center",
+  fontFamily: "Arial, sans-serif",
+  borderRadius: "18px",
+  background: "rgba(255,255,255,0.06)",
+  border: "1px solid rgba(255,255,255,0.1)",
+},
 
 
 
-  progressBar: {
-    height: "10px",
-    background: "#4e3f3f",
-    borderRadius: "10px",
-    marginTop: "10px",
-    overflow: "hidden",
-  },
+sidebarWrapper: {
+  width: "220px",
+  flexShrink: 0,
+},
 
-  progressFill: {
-    height: "100%",
-    background: "#00ff5e",
-    transition: "0.3s",
-  },
 
-  macroBox: {
-    marginTop: "15px",
-    padding: "15px",
-    backgroundColor: "#202020",
-    borderRadius: "10px",
-    width: "100%",
-    maxWidth: "500px",
-  },
+progressBar: {
+  height: "12px",
+  background: "rgba(255,255,255,0.1)",
+  borderRadius: "10px",
+  marginTop: "12px",
+  overflow: "hidden",
+},
 
+progressFill: {
+  height: "100%",
+  background: "linear-gradient(90deg, #00ff87, #60efff)",
+  transition: "0.4s ease",
+},
+
+
+macroBox: {
+  marginTop: "15px",
+  padding: "18px",
+  borderRadius: "14px",
+  background: "rgba(255,255,255,0.07)",
+  backdropFilter: "blur(10px)",
+  border: "1px solid rgba(255,255,255,0.1)",
+},
+
+dashboardWrapper: {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "25px",
+  padding: "20px",
+  alignItems: "stretch",
+  justifyContent: "center",
+
+  background: darkMode
+    ? "rgba(20,20,35,0.55)"
+    : "rgba(255,255,255,0.55)",
+
+  backdropFilter: "blur(18px)",
+  WebkitBackdropFilter: "blur(18px)",
+
+  borderRadius: "20px",
+  border: darkMode
+    ? "1px solid rgba(255,255,255,0.08)"
+    : "1px solid rgba(255,255,255,0.4)",
+
+  marginTop: "20px"
+},
+  
   title: {
     fontSize: "36px",
     marginBottom: "10px",
@@ -291,25 +444,27 @@ mainArea: {
     textAlign: "center",
   },
 
-  totalBox: {
-    marginBottom: "20px",
-    padding: "12px",
-    backgroundColor: "#000",
-    color: "#fff",
-    fontWeight: "bold",
-    borderRadius: "8px",
-    width: "100%",
-    maxWidth: "500px",
-  },
+totalBox: {
+  marginBottom: "20px",
+  padding: "18px",
+  borderRadius: "14px",
+  background: "rgba(0,0,0,0.35)",
+  border: "1px solid rgba(255,255,255,0.1)",
+  fontWeight: "bold",
+},
 
-  goalInput: {
-    width: "100%",
-    padding: "8px",
-    marginTop: "8px",
-    borderRadius: "6px",
-    border: "none",
-    boxSizing: "border-box",
-  },
+
+goalInput: {
+  width: "100%",
+  padding: "10px",
+  marginTop: "8px",
+  borderRadius: "10px",
+  border: "1px solid rgba(255,255,255,0.2)",
+  background: "rgba(255,255,255,0.08)",
+  color: "white",
+  outline: "none",
+},
+
 
   result: {
     marginTop: "25px",
@@ -321,7 +476,9 @@ mainArea: {
     marginTop: "20px",
     color: "red",
   },
-};
+});
+
+
 
 
 export default App;

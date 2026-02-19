@@ -23,26 +23,42 @@ function WeeklySummary({ meals }) {
       .reduce((sum, meal) => sum + (meal.calories || 0), 0);
 
     return {
-      day: day.slice(0, 3), // Mon Tue Wed
+      day: day.slice(0, 3),
       calories: total,
     };
   });
 
   return (
-    <div style={{ marginTop: "40px" }}>
-      <h3>Weekly Calories</h3>
+    <div style={{ marginTop: "10px" }}>
+      <h3 style={{ marginBottom: "10px" }}>Weekly Calories</h3>
 
-      <ResponsiveContainer width="100%" height={250}>
+      <ResponsiveContainer width="100%" height={260}>
         <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="day" />
-          <YAxis />
+          <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+
+          <XAxis
+            dataKey="day"
+            stroke="#ccc"
+            tick={{ fontSize: 12 }}
+          />
+
+          <YAxis
+            stroke="#ccc"
+            tick={{ fontSize: 12 }}
+          />
+
           <Tooltip />
+
           <Line
             type="monotone"
             dataKey="calories"
-            stroke="#22c55e"
+            stroke="#00ff87"
             strokeWidth={3}
+            dot={{ r: 4 }}
+            activeDot={{ r: 6 }}
+            isAnimationActive={true}
+            animationDuration={800}
+            animationEasing="ease-out"
           />
         </LineChart>
       </ResponsiveContainer>
