@@ -10,6 +10,17 @@ import ThemeToggle from "./components/ThemeToggle";
 
 
 function App() {
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 900);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const [food, setFood] = useState("");
   const [goal, setGoal] = useState("maintenance");
   const [result, setResult] = useState("");
@@ -20,6 +31,7 @@ const [darkMode, setDarkMode] = useState(() => {
   const saved = localStorage.getItem("fitsense_theme");
   return saved ? JSON.parse(saved) : true;
 });
+
 
 
   // Load daily goal from localStorage
@@ -140,16 +152,29 @@ useEffect(() => {
       prevMeals.filter((_, index) => index !== indexToDelete)
     );
   };
-  const styles = getStyles(darkMode);
+const styles = getStyles(darkMode, isMobile);
 
 return (
   <div style={styles.page}>
-    <div style={styles.sidebarWrapper}>
-      <Sidebar />
-    </div>
-
+    {(!isMobile || sidebarOpen) && (
+      <div style={styles.sidebarWrapper}>
+        <Sidebar />
+      </div>
+    )}
     <div style={styles.mainArea}>
-      <TopBar />
+
+  <div style={styles.topBarWrapper}>
+    {isMobile && (
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        style={styles.menuButton}
+      >
+        ☰
+      </button>
+    )}
+    <TopBar />
+  </div>
+
 
       {/* DASHBOARD CONTENT */}
 {/* DASHBOARD CONTENT */}
@@ -267,11 +292,12 @@ return (
 
 }
 
-const getStyles = (darkMode) => ({
+
+const getStyles = (darkMode, isMobile) => ({
   /* FULL SCREEN PAGE */
 page: {
   display: "flex",
-  flexDirection: "column",
+  flexDirection: isMobile ? "column" : "row",
   width: "100vw",
   minHeight: "100vh",
   background: darkMode ? "#0f172a" : "#f3f4f6",
@@ -279,9 +305,6 @@ page: {
   transition: "0.3s",
 },
 
-dashboardWrapper: {
-  border: "3px solid red"
-},
 
 
 appContainer: {
@@ -291,6 +314,12 @@ appContainer: {
     ? "linear-gradient(135deg,#0f172a,#1e293b)"
     : "linear-gradient(135deg,#dbeafe,#f0f9ff)"
 },
+
+sidebar: {
+  width: isMobile ? "100%" : "250px",
+  height: isMobile ? "auto" : "100vh",
+},
+
 
 statsRow: {
   display: "flex",
@@ -343,19 +372,35 @@ card: {
 
 dashboard: {
   display: "grid",
-  gridTemplateColumns: "1fr 1fr",
+  gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
   gap: "24px",
   padding: "20px",
+  flex: 1,
+},
+
+topBarWrapper: {
+  display: "flex",
+  alignItems: "center",
+  gap: "15px",
+},
+
+menuButton: {
+  fontSize: "22px",
+  padding: "8px 14px",
+  borderRadius: "10px",
+  border: "none",
+  background: "rgba(255,255,255,0.1)",
+  color: "white",
+  cursor: "pointer",
 },
 
 
 
 mobileStack: {
-  gridTemplateColumns: window.innerWidth < 900 ? "1fr" : "1fr 1fr",
+  display: "grid",
+  gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+  gap: "24px",
 },
-
-
-
 
   /* LEFT SIDE (CHART) */
 leftPanel: {
@@ -380,9 +425,10 @@ container: {
 
 
 sidebarWrapper: {
-  width: "220px",
+  width: isMobile ? "100%" : "220px",
   flexShrink: 0,
 },
+
 
 
 progressBar: {
