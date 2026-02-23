@@ -7,7 +7,24 @@ import Sidebar from "./components/Sidebar";
 import TopBar from "./components/TopBar";
 import StatCard from "./components/StatCard";
 import ThemeToggle from "./components/ThemeToggle";
+import { Routes, Route } from "react-router-dom";
 
+// Temporary pages (we'll design later)
+function Overview() {
+  return <div>Overview Page</div>;
+}
+
+function Meals() {
+  return <div>Meals Page</div>;
+}
+
+function Analytics() {
+  return <div>Analytics Page</div>;
+}
+
+function Settings() {
+  return <div>Settings Page</div>;
+}
 
 function App() {
 
@@ -172,118 +189,96 @@ return (
         ☰
       </button>
     )}
-    <TopBar />
-  </div>
-
-
-      {/* DASHBOARD CONTENT */}
-{/* DASHBOARD CONTENT */}
-<div style={styles.contentArea}>
-  <div style={styles.dashboardWrapper}>
-  <div style={{ ...styles.dashboard, ...styles.mobileStack }}>
-
-    {/* LEFT — Chart */}
-    <div style={styles.leftPanel}>
-      <WeeklySummary meals={meals} />
-    </div>
-
-    {/* RIGHT — Main App */}
-    <div style={styles.container}>
-      <h1 style={styles.title}>FitSense AI</h1>
-
-      <div style={{ marginBottom: "20px" }}>
-  <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
+<TopBar />
 </div>
 
+<Routes>
 
-      <p style={styles.subtitle}>
-        Smart calorie insights based on your fitness goal
-      </p>
+  {/* DASHBOARD PAGE */}
+  <Route
+    path="/"
+    element={
+      <div style={styles.contentArea}>
+        <div style={styles.dashboardWrapper}>
+          <div style={{ ...styles.dashboard, ...styles.mobileStack }}>
 
-<div style={styles.statsRow}>
+            {/* LEFT — Chart */}
+            <div style={styles.leftPanel}>
+              <WeeklySummary meals={meals} />
+            </div>
 
-  <StatCard
-    label="Calories"
-    value={totalCaloriesToday}
-    unit="kcal"
-    icon="🔥"
-    color="#00ff87"
-  />
+            {/* RIGHT — Main App */}
+            <div style={styles.container}>
+              <h1 style={styles.title}>FitSense AI</h1>
 
-  <StatCard
-    label="Protein"
-    value={totalProteinToday}
-    unit="g"
-    icon="🥩"
-    color="#60efff"
-  />
+              <div style={{ marginBottom: "20px" }}>
+                <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
+              </div>
 
-  <StatCard
-    label="Carbs"
-    value={totalCarbsToday}
-    unit="g"
-    icon="🍚"
-    color="#facc15"
-  />
+              <p style={styles.subtitle}>
+                Smart calorie insights based on your fitness goal
+              </p>
 
-  <StatCard
-    label="Fat"
-    value={totalFatToday}
-    unit="g"
-    icon="🥑"
-    color="#fb7185"
-  />
+              <div style={styles.statsRow}>
+                <StatCard label="Calories" value={totalCaloriesToday} unit="kcal" icon="🔥" color="#00ff87" />
+                <StatCard label="Protein" value={totalProteinToday} unit="g" icon="🥩" color="#60efff" />
+                <StatCard label="Carbs" value={totalCarbsToday} unit="g" icon="🍚" color="#facc15" />
+                <StatCard label="Fat" value={totalFatToday} unit="g" icon="🥑" color="#fb7185" />
+              </div>
 
-</div>
+              <div style={styles.totalBox}>
+                🔥 Today’s Total: {totalCaloriesToday} / {numericGoal || 0} kcal
 
+                <div style={{ marginTop: "10px" }}>
+                  <input
+                    type="number"
+                    min="0"
+                    value={dailyGoal}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "") return setDailyGoal("");
+                      if (Number(value) >= 0) setDailyGoal(value);
+                    }}
+                    style={styles.goalInput}
+                  />
+                </div>
 
-      <div style={styles.totalBox}>
-        🔥 Today’s Total: {totalCaloriesToday} / {numericGoal || 0} kcal
+                <div style={styles.progressBar}>
+                  <div
+                    style={{
+                      ...styles.progressFill,
+                      width: `${progressPercent}%`
+                    }}
+                  />
+                </div>
+              </div>
 
-        <div style={{ marginTop: "10px" }}>
-          <input
-            type="number"
-            min="0"
-            value={dailyGoal}
-            onChange={(e) => {
-              const value = e.target.value;
-              if (value === "") return setDailyGoal("");
-              if (Number(value) >= 0) setDailyGoal(value);
-            }}
-            style={styles.goalInput}
-          />
-        </div>
+              <GoalSelector goal={goal} setGoal={setGoal} />
 
-        <div style={styles.progressBar}>
-          <div
-            style={{
-              ...styles.progressFill,
-              width: `${progressPercent}%`
-            }}
-          />
+              <FoodInput
+                food={food}
+                setFood={setFood}
+                onSubmit={estimateCalories}
+                loading={loading}
+              />
+
+              {result && <div style={styles.result}>{result}</div>}
+              {error && <div style={styles.error}>{error}</div>}
+
+              <MealHistory meals={meals} onDelete={deleteMeal} />
+            </div>
+
+          </div>
         </div>
       </div>
+    }
+  />
 
-      <GoalSelector goal={goal} setGoal={setGoal} />
+  <Route path="/meals" element={<Meals />} />
+  <Route path="/analytics" element={<Analytics />} />
+  <Route path="/settings" element={<Settings />} />
 
-      <FoodInput
-        food={food}
-        setFood={setFood}
-        onSubmit={estimateCalories}
-        loading={loading}
-      />
-
-      {result && <div style={styles.result}>{result}</div>}
-      {error && <div style={styles.error}>{error}</div>}
-
-      <MealHistory meals={meals} onDelete={deleteMeal} />
-    </div>
-
-  </div>
-
-</div>
-
-    </div>
+</Routes>
   </div>
   </div>
 
@@ -298,11 +293,12 @@ const getStyles = (darkMode, isMobile) => ({
 page: {
   display: "flex",
   flexDirection: isMobile ? "column" : "row",
-  width: "100vw",
+  width: "100%",
   minHeight: "100vh",
   background: darkMode ? "#0f172a" : "#f3f4f6",
   color: darkMode ? "white" : "#111",
   transition: "0.3s",
+  overflow: "hidden",
 },
 
 
@@ -329,6 +325,13 @@ statsRow: {
   flexWrap: "wrap",
 },
 
+content: {
+  maxWidth: "1200px",
+  margin: "40px auto",
+  width: "100%",
+  padding: "0 20px"
+},
+
 
 glassCard: {
   background: "rgba(255,255,255,0.08)",
@@ -336,7 +339,7 @@ glassCard: {
   WebkitBackdropFilter: "blur(12px)",
   borderRadius: "16px",
   border: "1px solid rgba(255,255,255,0.15)",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
 },
 
 
@@ -353,13 +356,14 @@ mainArea: {
   flex: 1,
   display: "flex",
   flexDirection: "column",
-  height: "100vh",
+  overflowY: "auto",
+  paddingLeft: "60px",
 },
 
 contentArea: {
   flex: 1,
   overflowY: "auto",
-  padding: "20px",
+  padding: "40px 30px",
 },
 
 card: {
@@ -374,14 +378,33 @@ dashboard: {
   display: "grid",
   gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
   gap: "24px",
-  padding: "20px",
-  flex: 1,
+  alignItems: "stretch",
 },
 
+
+
 topBarWrapper: {
+  height: "70px",
+  minHeight: "70px",
   display: "flex",
   alignItems: "center",
   gap: "15px",
+  padding: "0 30px",
+
+  borderBottom: darkMode
+    ? "1px solid rgba(255,255,255,0.08)"
+    : "1px solid rgba(0,0,0,0.08)",
+
+  background: darkMode
+    ? "rgba(15,23,42,0.75)"
+    : "rgba(255,255,255,0.75)",
+
+  backdropFilter: "blur(14px)",
+  WebkitBackdropFilter: "blur(14px)",
+
+  position: "sticky",
+  top: 0,
+  zIndex: 50,
 },
 
 menuButton: {
@@ -417,9 +440,11 @@ container: {
   padding: "30px",
   textAlign: "center",
   fontFamily: "Arial, sans-serif",
-  borderRadius: "18px",
+  borderRadius: "20px", // will change this later on for a better look
   background: "rgba(255,255,255,0.06)",
   border: "1px solid rgba(255,255,255,0.1)",
+  maxWidth: "520px",
+  margin: "0 auto",
 },
 
 
@@ -427,9 +452,10 @@ container: {
 sidebarWrapper: {
   width: isMobile ? "100%" : "220px",
   flexShrink: 0,
+  borderRight: darkMode
+    ? "1px solid rgba(255,255,255,0.08)"
+    : "1px solid rgba(0,0,0,0.08)",
 },
-
-
 
 progressBar: {
   height: "12px",
@@ -445,7 +471,6 @@ progressFill: {
   transition: "0.4s ease",
 },
 
-
 macroBox: {
   marginTop: "15px",
   padding: "18px",
@@ -456,10 +481,13 @@ macroBox: {
 },
 
 dashboardWrapper: {
+  width: "93%",
+  maxWidth: "1200px",
+  margin: "0 auto",
   display: "flex",
   flexWrap: "wrap",
   gap: "25px",
-  padding: "20px",
+  padding: "30px",
   alignItems: "stretch",
   justifyContent: "center",
 
@@ -474,25 +502,24 @@ dashboardWrapper: {
   border: darkMode
     ? "1px solid rgba(255,255,255,0.08)"
     : "1px solid rgba(255,255,255,0.4)",
-
-  marginTop: "20px"
 },
   
-  title: {
-    fontSize: "36px",
-    marginBottom: "10px",
-    textAlign: "center",
-  },
+title: {
+  fontSize: "36px",
+  marginBottom: "8px",
+  letterSpacing: "0.5px",
+},
 
-  subtitle: {
-    color: "#666",
-    marginBottom: "25px",
-    textAlign: "center",
-  },
+
+
+subtitle: {
+  color: darkMode ? "#94a3b8" : "#555",
+  marginBottom: "30px",
+},
 
 totalBox: {
   marginBottom: "20px",
-  padding: "18px",
+  padding: "20px",
   borderRadius: "14px",
   background: "rgba(0,0,0,0.35)",
   border: "1px solid rgba(255,255,255,0.1)",
@@ -501,7 +528,7 @@ totalBox: {
 
 
 goalInput: {
-  width: "100%",
+  width: "95%",
   padding: "10px",
   marginTop: "8px",
   borderRadius: "10px",
