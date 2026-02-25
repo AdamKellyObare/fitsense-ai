@@ -30,6 +30,8 @@ function App() {
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
 
 
   useEffect(() => {
@@ -170,6 +172,55 @@ useEffect(() => {
     );
   };
 const styles = getStyles(darkMode, isMobile);
+
+if (!authenticated) {
+  return (
+    <div style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "100vh",
+      background: "#0f172a",
+      color: "white",
+      flexDirection: "column",
+      fontFamily: "Arial"
+    }}>
+      <h2>FitSense AI Preview</h2>
+
+      <input
+        type="password"
+        placeholder="Enter password"
+        value={passwordInput}
+        onChange={(e) => setPasswordInput(e.target.value)}
+        style={{
+          padding: "10px",
+          borderRadius: "8px",
+          marginTop: "15px",
+          border: "none"
+        }}
+      />
+
+      <button
+        onClick={() => {
+          if (passwordInput === "1234") {
+            setAuthenticated(true);
+          } else {
+            alert("Wrong password");
+          }
+        }}
+        style={{
+          marginTop: "15px",
+          padding: "10px 20px",
+          borderRadius: "8px",
+          border: "none",
+          cursor: "pointer"
+        }}
+      >
+        Login
+      </button>
+    </div>
+  );
+}
 
 return (
   <div style={styles.page}>

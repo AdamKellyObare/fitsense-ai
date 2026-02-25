@@ -57,7 +57,7 @@ function WeeklySummary({ meals }) {
             dot={{ r: 4 }}
             activeDot={{ r: 6 }}
             isAnimationActive={true}
-            animationDuration={800}
+            animationDuration={4000}
             animationEasing="ease-out"
           />
         </LineChart>
