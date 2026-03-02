@@ -8,14 +8,11 @@ import TopBar from "./components/TopBar";
 import StatCard from "./components/StatCard";
 import ThemeToggle from "./components/ThemeToggle";
 import { Routes, Route } from "react-router-dom";
+import Meals from "./pages/Meals";
 
 // Temporary pages (we'll design later)
 function Overview() {
   return <div>Overview Page</div>;
-}
-
-function Meals() {
-  return <div>Meals Page</div>;
 }
 
 function Analytics() {
@@ -325,8 +322,10 @@ return (
     }
   />
 
-  <Route path="/meals" element={<Meals />} />
-  <Route path="/analytics" element={<Analytics />} />
+<Route
+  path="/meals"
+  element={<Meals meals={meals} setMeals={setMeals} />}
+/>  <Route path="/analytics" element={<Analytics />} />
   <Route path="/settings" element={<Settings />} />
 
 </Routes>
