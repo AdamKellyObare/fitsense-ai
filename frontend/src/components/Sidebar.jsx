@@ -33,17 +33,18 @@ function Sidebar() {
 }
 
 const styles = {
-  sidebar: {
-    width: "240px",
-    background: "#181818",
-    padding: "30px 20px",
-    borderRight: "1px solid #333",
-    minHeight: "100vh",
-    position: "fixed",
-    left: 0,
-    top: 0,
-    bottom: 0,
-  },
+sidebar: {
+  width: "240px",
+  background: "#181818",
+  padding: "30px 20px",
+  borderRight: "1px solid #333",
+  minHeight: "100vh",
+  position: "fixed",
+  left: 0,
+  top: 0,
+  bottom: 0,
+  boxSizing: "border-box",
+},
 
   link: {
     display: "block",
