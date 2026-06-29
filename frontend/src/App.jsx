@@ -83,7 +83,6 @@ function App() {
     setResult("");
 
     const baseCalories = Math.floor(Math.random() * 500) + 200;
-
     let adjustedCalories = baseCalories;
 
     if (goal === "cutting") {
@@ -108,11 +107,7 @@ function App() {
     };
 
     setMeals((prevMeals) => [...prevMeals, newMeal]);
-
-    setResult(
-      `Estimated calories for ${food}: ${adjustedCalories} kcal (${goal})`
-    );
-
+    setResult(`Estimated calories for ${food}: ${adjustedCalories} kcal (${goal})`);
     setFood("");
     setLoading(false);
   };
@@ -146,9 +141,7 @@ function App() {
   const numericGoal = Number(dailyGoal);
 
   const progressPercent =
-    numericGoal > 0
-      ? Math.min((totalCaloriesToday / numericGoal) * 100, 100)
-      : 0;
+    numericGoal > 0 ? Math.min((totalCaloriesToday / numericGoal) * 100, 100) : 0;
 
   const caloriesRemaining =
     numericGoal - totalCaloriesToday > 0 ? numericGoal - totalCaloriesToday : 0;
@@ -161,169 +154,162 @@ function App() {
 
   const styles = getStyles(darkMode, isMobile);
 
-if (!authenticated) {
-  return (
-    <div style={styles.loginPage}>
-      <div style={styles.loginNav}>
-        <div style={styles.loginBrand}>
-          <div style={styles.loginBrandIcon}>F</div>
-          <span>FitSense AI</span>
+  if (!authenticated) {
+    return (
+      <div style={styles.loginPage}>
+        <div style={styles.loginNav}>
+          <div style={styles.loginBrand}>
+            <div style={styles.loginBrandIcon}>F</div>
+            <span>FitSense AI</span>
+          </div>
         </div>
 
-        <div style={styles.loginNavLinks}>
-          <span>Preview</span>
-          <span>Features</span>
-          <span>AI Coach</span>
-        </div>
-      </div>
+        <div style={styles.loginHero}>
+          <div style={styles.loginLeft}>
+            <div style={styles.loginBadge}>⭐ Lead tester preview access</div>
 
-      <div style={styles.loginHero}>
-        <div style={styles.loginLeft}>
-          <div style={styles.loginBadge}>⭐ Lead tester preview access</div>
+            <h1 style={styles.loginHeroTitle}>
+              Track your calories smarter with FitSense AI
+            </h1>
 
-          <h1 style={styles.loginHeroTitle}>
-            Track your calories smarter with FitSense AI
-          </h1>
+            <p style={styles.loginHeroText}>
+              Log meals, monitor macros, track water, view analytics, and get
+              AI-powered nutrition insights from one clean dashboard.
+            </p>
 
-          <p style={styles.loginHeroText}>
-            Log meals, monitor macros, track water, view analytics, and get
-            AI-powered nutrition insights from one clean dashboard.
-          </p>
+            <div style={styles.trustStats}>
+              <span>🔥 Meal tracking</span>
+              <span>🥩 Macro insights</span>
+              <span>🤖 AI coach</span>
+            </div>
 
-          <div style={styles.trustStats}>
-            <span>🔥 Meal tracking</span>
-            <span>🥩 Macro insights</span>
-            <span>🤖 AI coach</span>
+            <div style={styles.loginAccessBox}>
+              <label style={styles.loginLabel}>Tester password</label>
+
+              <input
+                type="password"
+                placeholder="Enter password"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && passwordInput === "1234") {
+                    setAuthenticated(true);
+                  }
+                }}
+                style={styles.loginInput}
+              />
+
+              <button
+                onClick={() => {
+                  if (passwordInput === "1234") {
+                    setAuthenticated(true);
+                  } else {
+                    alert("Wrong password");
+                  }
+                }}
+                style={styles.loginButton}
+              >
+                Enter Dashboard
+              </button>
+
+              <div style={styles.testerBox}>
+                <div style={styles.testerTitle}>🧪 Demo Account Access</div>
+                <div style={styles.testerPassword}>
+                  Tester Access Password: <strong>1234</strong>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div style={styles.loginAccessBox}>
-            <label style={styles.loginLabel}>Tester password</label>
+          <div style={styles.loginRight}>
+            <div style={styles.phoneFrame}>
+              <div style={styles.phoneScreen}>
+                <div style={styles.phoneStatusBar}>
+                  <span style={styles.phoneTime}>9:41</span>
 
-            <input
-              type="password"
-              placeholder="Enter password"
-              value={passwordInput}
-              onChange={(e) => setPasswordInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && passwordInput === "1234") {
-                  setAuthenticated(true);
-                }
-              }}
-              style={styles.loginInput}
-            />
+                  <div style={styles.dynamicIsland}></div>
 
-            <button
-              onClick={() => {
-                if (passwordInput === "1234") {
-                  setAuthenticated(true);
-                } else {
-                  alert("Wrong password");
-                }
-              }}
-              style={styles.loginButton}
-            >
-              Enter Dashboard
-            </button>
+                  <div style={styles.iosIcons}>
+                    <span style={styles.cellularIcon}>
+                      <span style={{ width: "3px", height: "4px", background: "white", borderRadius: "2px" }}></span>
+                      <span style={{ width: "3px", height: "6px", background: "white", borderRadius: "2px" }}></span>
+                      <span style={{ width: "3px", height: "8px", background: "white", borderRadius: "2px" }}></span>
+                      <span style={{ width: "3px", height: "10px", background: "white", borderRadius: "2px" }}></span>
+                    </span>
 
-            <div style={styles.testerBox}>
-              <div style={styles.testerTitle}>🧪 Demo Account Access</div>
-              <div style={styles.testerPassword}>
-                Tester Access Password: <strong>1234</strong>
+                    <span style={styles.wifiSvg}>⌁</span>
+
+                    <span style={styles.batteryOuter}>
+                      <span style={styles.batteryInner}></span>
+                      <span style={styles.batteryCap}></span>
+                    </span>
+                  </div>
+                </div>
+
+                <div style={styles.phoneHeader}>
+                  <button style={styles.iconCircle}>←</button>
+                  <span style={styles.phoneTitle}>Scanner</span>
+                  <button style={styles.iconCircle}>•••</button>
+                </div>
+
+                <div style={styles.scanCard}>
+                  <div style={styles.scanCardTitle}>AI meal scan preview</div>
+
+                  <div style={styles.scanFrame}>
+                    <img
+                      src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=90"
+                      alt="Healthy meal"
+                      style={styles.mealImage}
+                    />
+
+                    <div style={styles.scanOverlay}></div>
+
+                    <div style={styles.scanCornerTopLeft}></div>
+                    <div style={styles.scanCornerTopRight}></div>
+                    <div style={styles.scanCornerBottomLeft}></div>
+                    <div style={styles.scanCornerBottomRight}></div>
+
+                    <div style={styles.foodLabelOne}>Chicken bowl · 520 kcal</div>
+                    <div style={styles.foodLabelTwo}>Protein · 35 g</div>
+                    <div style={styles.foodLabelFour}>Vegetables · 90 kcal</div>
+                  </div>
+                </div>
+
+                <div style={styles.previewStats}>
+                  <div style={styles.previewStat}>
+                    <span>🔥 Calories</span>
+                    <strong>520 kcal</strong>
+                  </div>
+
+                  <div style={styles.previewStat}>
+                    <span>🥩 Protein</span>
+                    <strong>35 g</strong>
+                  </div>
+
+                  <div style={styles.previewStat}>
+                    <span>💧 Water</span>
+                    <strong>1.5 L</strong>
+                  </div>
+
+                  <div style={styles.previewStat}>
+                    <span>🎯 Goal</span>
+                    <strong>76%</strong>
+                  </div>
+                </div>
+
+                <div style={styles.aiPreview}>
+                  <strong>🤖 AI Coach</strong>
+                  <p>You are 480 kcal away from today’s goal.</p>
+                </div>
+
+                <div style={styles.homeIndicator}></div>
               </div>
             </div>
           </div>
         </div>
-
-<div style={styles.loginRight}>
-  <div style={styles.phoneFrame}>
-    <div style={styles.phoneScreen}>
-      <div style={styles.phoneStatusBar}>
-        <span style={styles.phoneTime}>9:41</span>
-
-        <div style={styles.dynamicIsland}></div>
-
-        <div style={styles.iosIcons}>
-          <span style={styles.cellularIcon}>
-            <span style={{ width: "3px", height: "4px", background: "white", borderRadius: "2px" }}></span>
-            <span style={{ width: "3px", height: "6px", background: "white", borderRadius: "2px" }}></span>
-            <span style={{ width: "3px", height: "8px", background: "white", borderRadius: "2px" }}></span>
-            <span style={{ width: "3px", height: "10px", background: "white", borderRadius: "2px" }}></span>
-          </span>
-
-          <span style={styles.wifiSvg}>⌁</span>
-
-          <span style={styles.batteryOuter}>
-            <span style={styles.batteryInner}></span>
-            <span style={styles.batteryCap}></span>
-          </span>
-        </div>
       </div>
-
-      <div style={styles.phoneHeader}>
-        <button style={styles.iconCircle}>←</button>
-        <span style={styles.phoneTitle}>Scanner</span>
-        <button style={styles.iconCircle}>•••</button>
-      </div>
-
-      <div style={styles.scanCard}>
-        <div style={styles.scanFrame}>
-          <img
-            src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=90"
-            alt="Healthy meal"
-            style={styles.mealImage}
-          />
-
-          <div style={styles.scanOverlay}></div>
-
-          <div style={styles.scanCornerTopLeft}></div>
-          <div style={styles.scanCornerTopRight}></div>
-          <div style={styles.scanCornerBottomLeft}></div>
-          <div style={styles.scanCornerBottomRight}></div>
-
-          <div style={styles.foodLabelOne}>Chicken bowl · 520</div>
-          <div style={styles.foodLabelTwo}>Protein 35g</div>
-          {/* <div style={styles.foodLabelThree}>Avocado · 90</div> */}
-          <div style={styles.foodLabelFour}>Vegetables · 90</div>
-        </div>
-
-        <p style={styles.scanText}>AI meal scan preview</p>
-      </div>
-
-      <div style={styles.previewStats}>
-        <div style={styles.previewStat}>
-          <span>🔥 Calories</span>
-          <strong>520 kcal</strong>
-        </div>
-
-        <div style={styles.previewStat}>
-          <span>🥩 Protein</span>
-          <strong>35g</strong>
-        </div>
-
-        <div style={styles.previewStat}>
-          <span>💧 Water</span>
-          <strong>1.5L</strong>
-        </div>
-
-        <div style={styles.previewStat}>
-          <span>🎯 Goal</span>
-          <strong>76%</strong>
-        </div>
-      </div>
-
-      <div style={styles.aiPreview}>
-        <strong>🤖 AI Coach</strong>
-        <p>You are 480 kcal away from today’s goal.</p>
-      </div>
-
-      <div style={styles.homeIndicator}></div>
-    </div>
-  </div>
-</div>
-      </div>
-    </div>
-  );
-}
+    );
+  }
 
   return (
     <div style={styles.page}>
@@ -362,10 +348,7 @@ if (!authenticated) {
                       <h1 style={styles.title}>FitSense AI</h1>
 
                       <div style={{ marginBottom: "20px" }}>
-                        <ThemeToggle
-                          darkMode={darkMode}
-                          setDarkMode={setDarkMode}
-                        />
+                        <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
                       </div>
 
                       <p style={styles.subtitle}>
@@ -373,73 +356,29 @@ if (!authenticated) {
                       </p>
 
                       <div style={styles.statsRow}>
-                        <StatCard
-                          label="Calories"
-                          value={totalCaloriesToday}
-                          unit="kcal"
-                          icon="🔥"
-                          color="#00ff87"
-                        />
-
-                        <StatCard
-                          label="Protein"
-                          value={totalProteinToday}
-                          unit="g"
-                          icon="🥩"
-                          color="#60efff"
-                        />
-
-                        <StatCard
-                          label="Carbs"
-                          value={totalCarbsToday}
-                          unit="g"
-                          icon="🍚"
-                          color="#facc15"
-                        />
-
-                        <StatCard
-                          label="Fat"
-                          value={totalFatToday}
-                          unit="g"
-                          icon="🥑"
-                          color="#fb7185"
-                        />
-
-                        <StatCard
-                          label="Water"
-                          value={water}
-                          unit="L"
-                          icon="💧"
-                          color="#38bdf8"
-                        />
+                        <StatCard label="Calories" value={totalCaloriesToday} unit="kcal" icon="🔥" color="#00ff87" />
+                        <StatCard label="Protein" value={totalProteinToday} unit="g" icon="🥩" color="#60efff" />
+                        <StatCard label="Carbs" value={totalCarbsToday} unit="g" icon="🍚" color="#facc15" />
+                        <StatCard label="Fat" value={totalFatToday} unit="g" icon="🥑" color="#fb7185" />
+                        <StatCard label="Water" value={water} unit="L" icon="💧" color="#38bdf8" />
                       </div>
 
                       <div style={styles.waterButtons}>
-                        <button
-                          onClick={() => setWater(water + 0.25)}
-                          style={styles.smallButton}
-                        >
+                        <button onClick={() => setWater(water + 0.25)} style={styles.smallButton}>
                           +250ml
                         </button>
 
-                        <button
-                          onClick={() => setWater(water + 0.5)}
-                          style={styles.smallButton}
-                        >
+                        <button onClick={() => setWater(water + 0.5)} style={styles.smallButton}>
                           +500ml
                         </button>
 
-                        <button
-                          onClick={() => setWater(0)}
-                          style={styles.resetWaterButton}
-                        >
+                        <button onClick={() => setWater(0)} style={styles.resetWaterButton}>
                           Reset Water
                         </button>
                       </div>
 
                       <div style={styles.totalBox}>
-                        🔥 Today’s Total: {totalCaloriesToday} /{" "}
-                        {numericGoal || 0} kcal
+                        🔥 Today’s Total: {totalCaloriesToday} / {numericGoal || 0} kcal
 
                         <div style={{ marginTop: "10px" }}>
                           <input
@@ -468,12 +407,10 @@ if (!authenticated) {
                       <div style={styles.aiCoach}>
                         <h3>🤖 AI Coach</h3>
                         <p>
-                          You're <strong>{caloriesRemaining} kcal</strong> away
-                          from today's goal.
+                          You're <strong>{caloriesRemaining} kcal</strong> away from today's goal.
                         </p>
                         <p>
-                          Protein consumed today:{" "}
-                          <strong>{totalProteinToday}g</strong>
+                          Protein consumed today: <strong>{totalProteinToday}g</strong>
                         </p>
                       </div>
 
@@ -497,13 +434,8 @@ if (!authenticated) {
             }
           />
 
-          <Route
-            path="/meals"
-            element={<Meals meals={meals} setMeals={setMeals} />}
-          />
-
+          <Route path="/meals" element={<Meals meals={meals} setMeals={setMeals} />} />
           <Route path="/analytics" element={<Analytics meals={meals} />} />
-
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </div>
@@ -519,7 +451,6 @@ const getStyles = (darkMode, isMobile) => ({
     minHeight: "100vh",
     background: darkMode ? "#0f172a" : "#f3f4f6",
     color: darkMode ? "white" : "#111",
-    transition: "0.3s",
     overflow: "hidden",
   },
 
@@ -548,9 +479,7 @@ const getStyles = (darkMode, isMobile) => ({
     alignItems: "center",
     padding: 0,
     margin: 0,
-    background: darkMode
-      ? "rgba(18,18,18,0.95)"
-      : "rgba(255,255,255,0.95)",
+    background: darkMode ? "rgba(18,18,18,0.95)" : "rgba(255,255,255,0.95)",
     borderBottom: darkMode
       ? "1px solid rgba(255,255,255,0.08)"
       : "1px solid rgba(0,0,0,0.08)",
@@ -580,15 +509,8 @@ const getStyles = (darkMode, isMobile) => ({
     width: "93%",
     maxWidth: "1200px",
     margin: "0 auto",
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "25px",
     padding: "30px",
-    alignItems: "stretch",
-    justifyContent: "center",
-    background: darkMode
-      ? "rgba(20,20,35,0.55)"
-      : "rgba(255,255,255,0.55)",
+    background: darkMode ? "rgba(20,20,35,0.55)" : "rgba(255,255,255,0.55)",
     backdropFilter: "blur(18px)",
     WebkitBackdropFilter: "blur(18px)",
     borderRadius: "20px",
@@ -631,7 +553,6 @@ const getStyles = (darkMode, isMobile) => ({
   title: {
     fontSize: "36px",
     marginBottom: "8px",
-    letterSpacing: "0.5px",
   },
 
   subtitle: {
@@ -730,708 +651,438 @@ const getStyles = (darkMode, isMobile) => ({
     color: "red",
   },
 
-loginPage: {
-  position: "fixed",
-  inset: 0,
-  width: "100vw",
-  height: "100vh",
-  background:
-    "radial-gradient(circle at top left, rgba(34,197,94,0.18), transparent 35%), linear-gradient(135deg, #020617, #0f172a)",
-  color: "white",
-  fontFamily: "Arial, sans-serif",
-  overflow: "auto",
-  boxSizing: "border-box",
-},
-
-loginNav: {
-  width: "100%",
-  maxWidth: "1250px",
-  margin: "0 auto",
-  padding: "28px 32px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  boxSizing: "border-box",
-},
-
-loginBrand: {
-  display: "flex",
-  alignItems: "center",
-  gap: "12px",
-  fontSize: "24px",
-  fontWeight: "900",
-},
-
-dynamicIsland: {
-  position: "absolute",
-  top: "12px",
-  left: "50%",
-  transform: "translateX(-50%)",
-  width: "110px",
-  height: "28px",
-  borderRadius: "20px",
-  background: "#000",
-  zIndex: 5,
-},
-
-trustStats: {
-  display: "flex",
-  gap: "12px",
-  flexWrap: "wrap",
-  marginBottom: "28px",
-  color: "#cbd5e1",
-  fontWeight: "700",
-},
-
-floatingTagOne: {
-  position: "absolute",
-  right: "-8px",
-  top: "45px",
-  background: "white",
-  color: "#111827",
-  padding: "9px 13px",
-  borderRadius: "14px",
-  fontWeight: "800",
-  fontSize: "12px",
-},
-
-floatingTagTwo: {
-  position: "absolute",
-  left: "-8px",
-  bottom: "55px",
-  background: "white",
-  color: "#111827",
-  padding: "9px 13px",
-  borderRadius: "14px",
-  fontWeight: "800",
-  fontSize: "12px",
-},
-
-loginBrandIcon: {
-  width: "42px",
-  height: "42px",
-  borderRadius: "14px",
-  background: "linear-gradient(135deg,#34d399,#22c55e)",
-  color: "#020617",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontWeight: "900",
-},
-
-loginNavLinks: {
-  display: isMobile ? "none" : "flex",
-  gap: "28px",
-  color: "#cbd5e1",
-  fontWeight: "700",
-},
-
-loginHero: {
-  maxWidth: "1250px",
-  minHeight: "calc(100vh - 110px)",
-  margin: "0 auto",
-  padding: "30px 32px 60px",
-  display: "grid",
-  gridTemplateColumns: isMobile ? "1fr" : "1.05fr 0.95fr",
-  gap: "50px",
-  alignItems: "center",
-  boxSizing: "border-box",
-},
-
-loginLeft: {
-  maxWidth: "620px",
-},
-
-loginBadge: {
-  display: "inline-flex",
-  alignItems: "center",
-  padding: "10px 14px",
-  borderRadius: "999px",
-  background: "rgba(255,255,255,0.08)",
-  border: "1px solid rgba(255,255,255,0.12)",
-  color: "#e2e8f0",
-  fontWeight: "700",
-  marginBottom: "24px",
-},
-
-loginHeroTitle: {
-  fontSize: isMobile ? "44px" : "68px",
-  lineHeight: "1.05",
-  letterSpacing: "-2px",
-  margin: "0 0 22px",
-  fontWeight: "900",
-},
-
-loginHeroText: {
-  fontSize: "18px",
-  lineHeight: "1.7",
-  color: "#94a3b8",
-  maxWidth: "560px",
-  marginBottom: "28px",
-},
-
-loginAccessBox: {
-  width: "100%",
-  maxWidth: "430px",
-  padding: "20px",
-  borderRadius: "22px",
-  background: "rgba(255,255,255,0.07)",
-  border: "1px solid rgba(255,255,255,0.12)",
-  boxShadow: "0 20px 50px rgba(0,0,0,0.25)",
-},
-
-loginLabel: {
-  display: "block",
-  marginBottom: "8px",
-  color: "#cbd5e1",
-  fontWeight: "700",
-},
-
-loginInput: {
-  width: "100%",
-  padding: "15px",
-  borderRadius: "14px",
-  border: "1px solid rgba(255,255,255,0.14)",
-  background: "#1e293b",
-  color: "white",
-  outline: "none",
-  boxSizing: "border-box",
-},
-
-loginButton: {
-  width: "100%",
-  padding: "15px",
-  marginTop: "14px",
-  borderRadius: "14px",
-  border: "none",
-  cursor: "pointer",
-  background: "linear-gradient(135deg,#22c55e,#16a34a)",
-  color: "white",
-  fontWeight: "900",
-  fontSize: "16px",
-},
-
-testerBox: {
-  marginTop: "16px",
-  padding: "14px",
-  borderRadius: "14px",
-  background: "rgba(34,197,94,0.1)",
-  border: "1px solid rgba(34,197,94,0.2)",
-},
-
-testerTitle: {
-  fontWeight: "900",
-  marginBottom: "6px",
-  color: "#34d399",
-},
-
-testerPassword: {
-  color: "#cbd5e1",
-},
-
-loginRight: {
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-},
-
-
-
-
-
-scanCard: {
-  padding: "16px",
-  borderRadius: "24px",
-  background: "rgba(255,255,255,0.08)",
-  border: "1px solid rgba(255,255,255,0.1)",
-  textAlign: "center",
-},
-
-scanFrame: {
-  height: "230px",
-  borderRadius: "24px",
-  overflow: "hidden",
-  position: "relative",
-  border: "1px solid rgba(255,255,255,0.18)",
-  background: "#111827",
-},
-
-
-
-
-
-
-floatingTag: {
-  position: "absolute",
-  top: "30px",
-  right: "-20px",
-  background: "white",
-  color: "#111",
-  padding: "10px 14px",
-  borderRadius: "14px",
-  fontWeight: "700",
-},
-
-
-
-phoneTime: {
-  fontSize: "13px",
-  fontWeight: "800",
-  justifySelf: "start",
-},
-
-
-
-iosIcons: {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-end",
-  gap: "7px",
-},
-
-cellularIcon: {
-  display: "flex",
-  alignItems: "flex-end",
-  gap: "2px",
-  height: "12px",
-},
-
-"cellularIcon span": {},
-
-wifiSvg: {
-  fontSize: "14px",
-  fontWeight: "bold",
-  display: "inline-block",
-  transform: "rotate(90deg)",
-  marginTop: "-1px",
-},
-batteryOuter: {
-  width: "23px",
-  height: "11px",
-  border: "1.6px solid white",
-  borderRadius: "4px",
-  position: "relative",
-  display: "inline-block",
-  boxSizing: "border-box",
-},
-
-batteryInner: {
-  position: "absolute",
-  left: "2px",
-  top: "2px",
-  width: "15px",
-  height: "5px",
-  borderRadius: "2px",
-  background: "white",
-},
-
-batteryCap: {
-  position: "absolute",
-  right: "-4px",
-  top: "3px",
-  width: "2px",
-  height: "5px",
-  borderRadius: "2px",
-  background: "white",
-},
-
-
-phoneFrame: {
-  width: isMobile ? "320px" : "345px",
-  height: "760px",
-  borderRadius: "52px",
-  padding: "7px",
-  background:
-    "linear-gradient(135deg, #475569, #111827 35%, #020617 70%, #64748b)",
-  boxShadow:
-    "0 35px 90px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.25)",
-  position: "relative",
-},
-
-phoneScreen: {
-  width: "100%",
-  height: "100%",
-  borderRadius: "45px",
-  background: "linear-gradient(180deg,#0f172a,#020617)",
-  overflow: "hidden",
-  padding: "16px",
-  boxSizing: "border-box",
-  position: "relative",
-},
-
-phoneStatusBar: {
-  height: "34px",
-  display: "grid",
-  gridTemplateColumns: "1fr auto 1fr",
-  alignItems: "center",
-  color: "white",
-  marginBottom: "8px",
-},
-
-phoneTime: {
-  fontSize: "13px",
-  fontWeight: "800",
-  justifySelf: "start",
-  paddingLeft: "4px",
-},
-
-dynamicIsland: {
-  width: "96px",
-  height: "27px",
-  borderRadius: "999px",
-  background: "#000",
-  justifySelf: "center",
-  boxShadow: "inset 20px 0 25px rgba(255,255,255,0.03)",
-},
-
-iosIcons: {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-end",
-  gap: "7px",
-},
-
-cellularIcon: {
-  display: "flex",
-  alignItems: "flex-end",
-  gap: "2px",
-  height: "12px",
-},
-
-wifiSvg: {
-  fontSize: "15px",
-  fontWeight: "bold",
-  display: "inline-block",
-  transform: "rotate(90deg)",
-  marginTop: "-1px",
-},
-
-batteryOuter: {
-  width: "23px",
-  height: "11px",
-  border: "1.6px solid white",
-  borderRadius: "4px",
-  position: "relative",
-  display: "inline-block",
-  boxSizing: "border-box",
-},
-
-batteryInner: {
-  position: "absolute",
-  left: "2px",
-  top: "2px",
-  width: "15px",
-  height: "5px",
-  borderRadius: "2px",
-  background: "white",
-},
-
-batteryCap: {
-  position: "absolute",
-  right: "-4px",
-  top: "3px",
-  width: "2px",
-  height: "5px",
-  borderRadius: "2px",
-  background: "white",
-},
-
-phoneHeader: {
-  height: "46px",
-  display: "grid",
-  gridTemplateColumns: "40px 1fr 40px",
-  alignItems: "center",
-  marginBottom: "10px",
-},
-
-phoneTitle: {
-  textAlign: "center",
-  fontWeight: "800",
-  fontSize: "16px",
-  color: "white",
-},
-
-iconCircle: {
-  width: "36px",
-  height: "36px",
-  borderRadius: "50%",
-  border: "none",
-  background: "rgba(255,255,255,0.13)",
-  color: "white",
-  fontSize: "18px",
-  fontWeight: "700",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  cursor: "default",
-},
-
-scanCard: {
-  padding: "12px",
-  borderRadius: "24px",
-  background: "rgba(255,255,255,0.08)",
-  border: "1px solid rgba(255,255,255,0.1)",
-  textAlign: "center",
-},
-
-scanFrame: {
-  height: "225px",
-  borderRadius: "20px",
-  overflow: "hidden",
-  position: "relative",
-  border: "1px solid rgba(255,255,255,0.18)",
-  background: "#111827",
-},
-
-mealImage: {
-  width: "100%",
-  height: "100%",
-  objectFit: "cover",
-  display: "block",
-},
-
-scanOverlay: {
-  position: "absolute",
-  inset: 0,
-  background:
-    "linear-gradient(to bottom, rgba(0,0,0,0.08), rgba(0,0,0,0.25))",
-},
-
-scanCornerTopLeft: {
-  position: "absolute",
-  top: "60px",
-  left: "58px",
-  width: "32px",
-  height: "32px",
-  borderTop: "3px solid white",
-  borderLeft: "3px solid white",
-  borderRadius: "8px 0 0 0",
-},
-
-scanCornerTopRight: {
-  position: "absolute",
-  top: "60px",
-  right: "58px",
-  width: "32px",
-  height: "32px",
-  borderTop: "3px solid white",
-  borderRight: "3px solid white",
-  borderRadius: "0 8px 0 0",
-},
-
-scanCornerBottomLeft: {
-  position: "absolute",
-  bottom: "48px",
-  left: "58px",
-  width: "32px",
-  height: "32px",
-  borderBottom: "3px solid white",
-  borderLeft: "3px solid white",
-  borderRadius: "0 0 0 8px",
-},
-
-scanCornerBottomRight: {
-  position: "absolute",
-  bottom: "48px",
-  right: "58px",
-  width: "32px",
-  height: "32px",
-  borderBottom: "3px solid white",
-  borderRight: "3px solid white",
-  borderRadius: "0 0 8px 0",
-},
-
-foodLabelOne: {
-  position: "absolute",
-  top: "22px",
-  left: "18px",
-  padding: "8px 12px",
-  borderRadius: "999px",
-  background: "rgba(255,255,255,0.94)",
-  color: "#111827",
-  fontWeight: "900",
-  fontSize: "12px",
-},
-
-foodLabelTwo: {
-  position: "absolute",
-  right: "14px",
-  top: "68px",
-  padding: "8px 12px",
-  borderRadius: "999px",
-  background: "rgba(255,255,255,0.94)",
-  color: "#111827",
-  fontWeight: "900",
-  fontSize: "12px",
-},
-
-foodLabelThree: {
-  position: "absolute",
-  right: "20px",
-  top: "118px",
-  padding: "8px 12px",
-  borderRadius: "999px",
-  background: "rgba(255,255,255,0.94)",
-  color: "#111827",
-  fontWeight: "900",
-  fontSize: "12px",
-},
-
-foodLabelFour: {
-  position: "absolute",
-  left: "20px",
-  bottom: "22px",
-  padding: "8px 12px",
-  borderRadius: "999px",
-  background: "rgba(255,255,255,0.94)",
-  color: "#111827",
-  fontWeight: "900",
-  fontSize: "12px",
-},
-
-scanText: {
-  color: "#cbd5e1",
-  margin: "12px 0 0",
-},
-
-homeIndicator: {
-  position: "absolute",
-  bottom: "8px",
-  left: "50%",
-  transform: "translateX(-50%)",
-  width: "110px",
-  height: "4px",
-  borderRadius: "999px",
-  background: "rgba(255,255,255,0.45)",
-},
-
-
-
-mealImage: {
-  width: "100%",
-  height: "100%",
-  objectFit: "cover",
-  display: "block",
-},
-
-scanOverlay: {
-  position: "absolute",
-  inset: 0,
-  background:
-    "linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,0.25))",
-},
-
-scanCornerTopLeft: {
-  position: "absolute",
-  top: "55px",
-  left: "45px",
-  width: "34px",
-  height: "34px",
-  borderTop: "3px solid white",
-  borderLeft: "3px solid white",
-  borderRadius: "8px 0 0 0",
-},
-
-scanCornerTopRight: {
-  position: "absolute",
-  top: "55px",
-  right: "45px",
-  width: "34px",
-  height: "34px",
-  borderTop: "3px solid white",
-  borderRight: "3px solid white",
-  borderRadius: "0 8px 0 0",
-},
-
-scanCornerBottomLeft: {
-  position: "absolute",
-  bottom: "55px",
-  left: "45px",
-  width: "34px",
-  height: "34px",
-  borderBottom: "3px solid white",
-  borderLeft: "3px solid white",
-  borderRadius: "0 0 0 8px",
-},
-
-scanCornerBottomRight: {
-  position: "absolute",
-  bottom: "55px",
-  right: "45px",
-  width: "34px",
-  height: "34px",
-  borderBottom: "3px solid white",
-  borderRight: "3px solid white",
-  borderRadius: "0 0 8px 0",
-},
-
-foodLabelOne: {
-  position: "absolute",
-  top: "22px",
-  left: "18px",
-  padding: "8px 12px",
-  borderRadius: "999px",
-  background: "rgba(255,255,255,0.9)",
-  color: "#111827",
-  fontWeight: "800",
-  fontSize: "12px",
-},
-
-foodLabelTwo: {
-  position: "absolute",
-  right: "16px",
-  top: "92px",
-  padding: "8px 12px",
-  borderRadius: "999px",
-  background: "rgba(255,255,255,0.9)",
-  color: "#111827",
-  fontWeight: "800",
-  fontSize: "12px",
-},
-
-foodLabelThree: {
-  position: "absolute",
-  left: "20px",
-  bottom: "24px",
-  padding: "8px 12px",
-  borderRadius: "999px",
-  background: "rgba(255,255,255,0.9)",
-  color: "#111827",
-  fontWeight: "800",
-  fontSize: "12px",
-},
-
-scanText: {
-  color: "#cbd5e1",
-  marginBottom: 0,
-},
-
-previewStats: {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: "12px",
-  marginTop: "16px",
-},
-
-previewStat: {
-  padding: "14px",
-  borderRadius: "18px",
-  background: "rgba(255,255,255,0.08)",
-  border: "1px solid rgba(255,255,255,0.1)",
-  display: "flex",
-  flexDirection: "column",
-  gap: "6px",
-  color: "#94a3b8",
-},
-
-aiPreview: {
-  marginTop: "16px",
-  padding: "16px",
-  borderRadius: "18px",
-  background: "rgba(34,197,94,0.12)",
-  border: "1px solid rgba(34,197,94,0.2)",
-  color: "#e2e8f0",
-},
+  loginPage: {
+    position: "fixed",
+    inset: 0,
+    width: "100vw",
+    height: "100vh",
+    background:
+      "radial-gradient(circle at top left, rgba(34,197,94,0.18), transparent 35%), linear-gradient(135deg, #020617, #0f172a)",
+    color: "white",
+    fontFamily: "Arial, sans-serif",
+    overflow: isMobile ? "auto" : "hidden",
+    boxSizing: "border-box",
+  },
+
+  loginNav: {
+    height: "68px",
+    maxWidth: "1250px",
+    margin: "0 auto",
+    padding: "18px 32px",
+    display: "flex",
+    alignItems: "center",
+    boxSizing: "border-box",
+  },
+
+  loginBrand: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    fontSize: "24px",
+    fontWeight: "900",
+  },
+
+  loginBrandIcon: {
+    width: "42px",
+    height: "42px",
+    borderRadius: "14px",
+    background: "linear-gradient(135deg,#34d399,#22c55e)",
+    color: "#020617",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "900",
+  },
+
+  loginHero: {
+    maxWidth: "1250px",
+    height: isMobile ? "auto" : "calc(100vh - 68px)",
+    margin: "0 auto",
+    padding: isMobile ? "20px 24px 40px" : "6px 32px 20px",
+    display: "grid",
+    gridTemplateColumns: isMobile ? "1fr" : "1.08fr 0.92fr",
+    gap: isMobile ? "30px" : "34px",
+    alignItems: "center",
+    boxSizing: "border-box",
+  },
+
+  loginLeft: {
+    maxWidth: "620px",
+  },
+
+  loginBadge: {
+    display: "inline-flex",
+    padding: "8px 14px",
+    borderRadius: "999px",
+    background: "rgba(255,255,255,0.08)",
+    border: "1px solid rgba(255,255,255,0.12)",
+    fontWeight: "700",
+    marginBottom: "14px",
+  },
+
+  loginHeroTitle: {
+    fontSize: isMobile ? "38px" : "48px",
+    lineHeight: "1.05",
+    letterSpacing: "-1.3px",
+    margin: "0 0 12px",
+    fontWeight: "900",
+  },
+
+  loginHeroText: {
+    fontSize: "16px",
+    lineHeight: "1.5",
+    color: "#94a3b8",
+    maxWidth: "560px",
+    marginBottom: "14px",
+  },
+
+  trustStats: {
+    display: "flex",
+    gap: "12px",
+    flexWrap: "wrap",
+    marginBottom: "18px",
+    color: "#cbd5e1",
+    fontWeight: "700",
+  },
+
+  loginAccessBox: {
+    width: "100%",
+    maxWidth: "430px",
+    padding: "17px",
+    borderRadius: "20px",
+    background: "rgba(255,255,255,0.07)",
+    border: "1px solid rgba(255,255,255,0.12)",
+  },
+
+  loginLabel: {
+    display: "block",
+    marginBottom: "8px",
+    color: "#cbd5e1",
+    fontWeight: "700",
+  },
+
+  loginInput: {
+    width: "100%",
+    padding: "13px",
+    borderRadius: "13px",
+    border: "1px solid rgba(255,255,255,0.14)",
+    background: "#1e293b",
+    color: "white",
+    outline: "none",
+    boxSizing: "border-box",
+  },
+
+  loginButton: {
+    width: "100%",
+    padding: "14px",
+    marginTop: "12px",
+    borderRadius: "13px",
+    border: "none",
+    cursor: "pointer",
+    background: "linear-gradient(135deg,#22c55e,#16a34a)",
+    color: "white",
+    fontWeight: "900",
+    fontSize: "16px",
+  },
+
+  testerBox: {
+    marginTop: "12px",
+    padding: "12px",
+    borderRadius: "13px",
+    background: "rgba(34,197,94,0.1)",
+    border: "1px solid rgba(34,197,94,0.2)",
+  },
+
+  testerTitle: {
+    fontWeight: "900",
+    marginBottom: "5px",
+    color: "#34d399",
+  },
+
+  testerPassword: {
+    color: "#cbd5e1",
+  },
+
+  loginRight: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  phoneFrame: {
+    width: isMobile ? "310px" : "325px",
+    height: isMobile ? "630px" : "630px",
+    borderRadius: "50px",
+    padding: "7px",
+    background:
+      "linear-gradient(135deg, #64748b, #111827 35%, #020617 70%, #64748b)",
+    boxShadow: "0 30px 80px rgba(0,0,0,0.55)",
+    position: "relative",
+    flexShrink: 0,
+  },
+
+  phoneScreen: {
+    width: "100%",
+    height: "100%",
+    borderRadius: "43px",
+    background: "linear-gradient(180deg,#0f172a,#020617)",
+    overflow: "hidden",
+    padding: "13px",
+    boxSizing: "border-box",
+    position: "relative",
+  },
+
+  phoneStatusBar: {
+    height: "30px",
+    display: "grid",
+    gridTemplateColumns: "1fr auto 1fr",
+    alignItems: "center",
+    color: "white",
+    marginBottom: "7px",
+  },
+
+  phoneTime: {
+    fontSize: "12px",
+    fontWeight: "800",
+    paddingLeft: "4px",
+  },
+
+  dynamicIsland: {
+    width: "90px",
+    height: "25px",
+    borderRadius: "999px",
+    background: "#000",
+  },
+
+  iosIcons: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: "7px",
+  },
+
+  cellularIcon: {
+    display: "flex",
+    alignItems: "flex-end",
+    gap: "2px",
+    height: "12px",
+  },
+
+  wifiSvg: {
+    fontSize: "14px",
+    fontWeight: "bold",
+    transform: "rotate(90deg)",
+    display: "inline-block",
+  },
+
+  batteryOuter: {
+    width: "23px",
+    height: "11px",
+    border: "1.6px solid white",
+    borderRadius: "4px",
+    position: "relative",
+    display: "inline-block",
+  },
+
+  batteryInner: {
+    position: "absolute",
+    left: "2px",
+    top: "2px",
+    width: "15px",
+    height: "5px",
+    borderRadius: "2px",
+    background: "white",
+  },
+
+  batteryCap: {
+    position: "absolute",
+    right: "-4px",
+    top: "3px",
+    width: "2px",
+    height: "5px",
+    borderRadius: "2px",
+    background: "white",
+  },
+
+  phoneHeader: {
+    height: "40px",
+    display: "grid",
+    gridTemplateColumns: "34px 1fr 34px",
+    alignItems: "center",
+    marginBottom: "7px",
+  },
+
+  phoneTitle: {
+    textAlign: "center",
+    fontWeight: "800",
+    fontSize: "15px",
+  },
+
+  iconCircle: {
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    border: "none",
+    background: "rgba(255,255,255,0.13)",
+    color: "white",
+    fontSize: "15px",
+    fontWeight: "700",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  scanCard: {
+    padding: "9px",
+    borderRadius: "19px",
+    background: "rgba(255,255,255,0.08)",
+    border: "1px solid rgba(255,255,255,0.1)",
+  },
+
+  scanCardTitle: {
+    color: "#e2e8f0",
+    fontWeight: "800",
+    fontSize: "14px",
+    marginBottom: "8px",
+  },
+
+  scanFrame: {
+    height: "178px",
+    borderRadius: "17px",
+    overflow: "hidden",
+    position: "relative",
+    border: "1px solid rgba(255,255,255,0.18)",
+  },
+
+  mealImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    display: "block",
+  },
+
+  scanOverlay: {
+    position: "absolute",
+    inset: 0,
+    background:
+      "linear-gradient(to bottom, rgba(0,0,0,0.04), rgba(0,0,0,0.18))",
+  },
+
+  foodLabelOne: {
+    position: "absolute",
+    top: "14px",
+    left: "12px",
+    padding: "6px 9px",
+    borderRadius: "999px",
+    background: "rgba(255,255,255,0.94)",
+    color: "#111827",
+    fontWeight: "900",
+    fontSize: "10px",
+  },
+
+  foodLabelTwo: {
+    position: "absolute",
+    right: "10px",
+    top: "72px",
+    padding: "6px 9px",
+    borderRadius: "999px",
+    background: "rgba(255,255,255,0.94)",
+    color: "#111827",
+    fontWeight: "900",
+    fontSize: "10px",
+  },
+
+  foodLabelFour: {
+    position: "absolute",
+    left: "14px",
+    bottom: "18px",
+    padding: "6px 9px",
+    borderRadius: "999px",
+    background: "rgba(255,255,255,0.94)",
+    color: "#111827",
+    fontWeight: "900",
+    fontSize: "10px",
+  },
+
+  scanCornerTopLeft: {
+    position: "absolute",
+    top: "54px",
+    left: "52px",
+    width: "26px",
+    height: "26px",
+    borderTop: "3px solid white",
+    borderLeft: "3px solid white",
+  },
+
+  scanCornerTopRight: {
+    position: "absolute",
+    top: "54px",
+    right: "52px",
+    width: "26px",
+    height: "26px",
+    borderTop: "3px solid white",
+    borderRight: "3px solid white",
+  },
+
+  scanCornerBottomLeft: {
+    position: "absolute",
+    bottom: "39px",
+    left: "52px",
+    width: "26px",
+    height: "26px",
+    borderBottom: "3px solid white",
+    borderLeft: "3px solid white",
+  },
+
+  scanCornerBottomRight: {
+    position: "absolute",
+    bottom: "39px",
+    right: "52px",
+    width: "26px",
+    height: "26px",
+    borderBottom: "3px solid white",
+    borderRight: "3px solid white",
+  },
+
+  previewStats: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "9px",
+    marginTop: "10px",
+  },
+
+  previewStat: {
+    padding: "9px",
+    borderRadius: "14px",
+    background: "rgba(255,255,255,0.08)",
+    border: "1px solid rgba(255,255,255,0.1)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "3px",
+    color: "#94a3b8",
+    fontSize: "13px",
+  },
+
+  aiPreview: {
+    marginTop: "10px",
+    padding: "11px",
+    borderRadius: "15px",
+    background: "rgba(34,197,94,0.12)",
+    border: "1px solid rgba(34,197,94,0.2)",
+    color: "#e2e8f0",
+    fontSize: "13px",
+  },
+
+  homeIndicator: {
+    position: "absolute",
+    bottom: "8px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    width: "105px",
+    height: "4px",
+    borderRadius: "999px",
+    background: "rgba(255,255,255,0.45)",
+  },
 });
 
 export default App;
