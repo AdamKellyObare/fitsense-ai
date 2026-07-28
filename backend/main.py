@@ -1,53 +1,34 @@
-from api.ai import router as ai_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+
+from api.ai import router as ai_router
+from api.auth import router as auth_router
 from api.meals import router as meals_router
+from core.config import settings
+from core.limiter import limiter
 
 app = FastAPI()
 
-app.include_router(ai_router)
-app.include_router(meals_router)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[settings.FRONTEND_ORIGIN],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-from datetime import datetime
+app.include_router(auth_router)
+app.include_router(meals_router)
+app.include_router(ai_router)
 
-food_logs = []
-meals = []
 
 @app.get("/")
 def root():
     return {"message": "FitSense AI backend is running"}
-
-
-@app.post("/log-food")
-def log_food(food: str, quantity: int = 1):
-    new_log = {
-        "id": len(food_logs) + 1,
-        "food": food,
-        "quantity": quantity,
-        "calories": None,          # AI will fill this later
-        "calorieSource": "ai_pending",
-        "createdAt": datetime.now()
-    }
-
-    food_logs.append(new_log)
-
-    return {
-        "message": "Food logged successfully",
-        "log": new_log
-    }
-# get endpoint
-@app.get("/food-logs")
-def get_food_logs():
-    return food_logs
-
-@app.get("/meals")
-def get_meals():
-    return meals

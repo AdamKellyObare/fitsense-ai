@@ -1,4 +1,4 @@
-function TopBar() {
+function TopBar({ userEmail, onLogout }) {
   return (
     <div style={styles.topbar}>
       <div style={styles.brand}>
@@ -9,7 +9,14 @@ function TopBar() {
         </div>
       </div>
 
-      <div style={styles.status}>🔥 Stay consistent</div>
+      <div style={styles.rightSide}>
+        {userEmail && <span style={styles.status}>{userEmail}</span>}
+        {onLogout && (
+          <button onClick={onLogout} style={styles.logoutButton}>
+            Log out
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -57,9 +64,27 @@ const styles = {
     fontSize: "12px",
   },
 
+  rightSide: {
+    display: "flex",
+    alignItems: "center",
+    gap: "16px",
+  },
+
   status: {
     color: "#94a3b8",
     fontWeight: "600",
+    fontSize: "14px",
+  },
+
+  logoutButton: {
+    padding: "8px 14px",
+    borderRadius: "10px",
+    border: "1px solid rgba(255,255,255,0.12)",
+    background: "rgba(255,255,255,0.06)",
+    color: "white",
+    cursor: "pointer",
+    fontWeight: "700",
+    fontSize: "13px",
   },
 };
 

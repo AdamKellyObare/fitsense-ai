@@ -1,22 +1,40 @@
-# backend/api/meals.py
-from fastapi import APIRouter
-from datetime import datetime
+from __future__ import annotations
 
-router = APIRouter()
+from typing import List
 
-# In-memory storage for now
-meals_db = []
+from fastapi import APIRouter, Depends, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-@router.post("/log-meal")
-async def log_meal(food: str, goal: str):
-    meal = {
-        "food": food,
-        "goal": goal,
-        "timestamp": datetime.now().isoformat()
-    }
-    meals_db.append(meal)
-    return {"message": "Meal logged", "meal": meal}
+from core.deps import get_current_user, require_csrf
+from db.session import get_db
+from models.meal import Meal
+from models.user import User
+from schemas.meal import MealCreate, MealPublic
 
-@router.get("/meals")
-async def get_meals():
-    return {"meals": meals_db}
+router = APIRouter(prefix="/meals", tags=["meals"])
+
+
+@router.post("", response_model=MealPublic, status_code=status.HTTP_201_CREATED)
+async def log_meal(
+    payload: MealCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    _: None = Depends(require_csrf),
+) -> Meal:
+    meal = Meal(user_id=current_user.id, food=payload.food, goal=payload.goal)
+    db.add(meal)
+    await db.commit()
+    await db.refresh(meal)
+    return meal
+
+
+@router.get("", response_model=List[MealPublic])
+async def get_meals(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> List[Meal]:
+    result = await db.scalars(
+        select(Meal).where(Meal.user_id == current_user.id).order_by(Meal.created_at.desc())
+    )
+    return list(result)
