@@ -1,4 +1,4 @@
-def estimate_with_mock(food: str) -> str:
+def estimate_with_mock(food: str) -> dict:
     food = food.lower()
 
     estimates = {
@@ -10,13 +10,18 @@ def estimate_with_mock(food: str) -> str:
         "banana": 105
     }
 
-    total = 0
+    calories = 0
 
-    for item, calories in estimates.items():
+    for item, item_calories in estimates.items():
         if item in food:
-            total += calories
+            calories += item_calories
 
-    if total == 0:
-        total = 300  # reasonable default for unknown meals
+    if calories == 0:
+        calories = 300  # reasonable default for unknown meals
 
-    return f"Estimated calories: {total} kcal (AI-assisted estimate)"
+    return {
+        "calories": calories,
+        "protein": round(calories * 0.15 / 4),
+        "carbs": round(calories * 0.5 / 4),
+        "fat": round(calories * 0.35 / 9),
+    }

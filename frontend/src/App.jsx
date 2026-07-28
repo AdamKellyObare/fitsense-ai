@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import { useAuth } from "./context/AuthContext";
+import { ApiError, mealsApi } from "./lib/api";
 
 import FoodInput from "./components/FoodInput";
 import GoalSelector from "./components/GoalSelector";
@@ -44,17 +45,7 @@ function App() {
     return Number(localStorage.getItem("fitsense_water") || 0);
   });
 
-  const [meals, setMeals] = useState(() => {
-    const saved = localStorage.getItem("fitsense_meals");
-    if (!saved) return [];
-
-    try {
-      const parsed = JSON.parse(saved);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  });
+  const [meals, setMeals] = useState([]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 900);
@@ -63,8 +54,15 @@ function App() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("fitsense_meals", JSON.stringify(meals));
-  }, [meals]);
+    if (!user) return;
+
+    mealsApi
+      .list()
+      .then((fetchedMeals) =>
+        setMeals(fetchedMeals.map((meal) => ({ ...meal, timestamp: meal.created_at })))
+      )
+      .catch(() => setMeals([]));
+  }, [user]);
 
   useEffect(() => {
     localStorage.setItem("fitsense_theme", JSON.stringify(darkMode));
@@ -85,34 +83,19 @@ function App() {
     setError("");
     setResult("");
 
-    const baseCalories = Math.floor(Math.random() * 500) + 200;
-    let adjustedCalories = baseCalories;
-
-    if (goal === "cutting") {
-      adjustedCalories = Math.round(baseCalories * 0.85);
-    } else if (goal === "bulking") {
-      adjustedCalories = Math.round(baseCalories * 1.15);
+    try {
+      const newMeal = await mealsApi.create(food, goal);
+      setMeals((prevMeals) => [
+        ...prevMeals,
+        { ...newMeal, timestamp: newMeal.created_at },
+      ]);
+      setResult(`Estimated calories for ${food}: ${newMeal.calories} kcal (${goal})`);
+      setFood("");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to analyze meal.");
+    } finally {
+      setLoading(false);
     }
-
-    const protein = Math.floor(Math.random() * 40) + 10;
-    const carbs = Math.floor(Math.random() * 60) + 20;
-    const fat = Math.floor(Math.random() * 25) + 5;
-
-    const newMeal = {
-      id: Date.now(),
-      food,
-      goal,
-      calories: adjustedCalories,
-      protein,
-      carbs,
-      fat,
-      timestamp: new Date().toISOString(),
-    };
-
-    setMeals((prevMeals) => [...prevMeals, newMeal]);
-    setResult(`Estimated calories for ${food}: ${adjustedCalories} kcal (${goal})`);
-    setFood("");
-    setLoading(false);
   };
 
   const today = new Date().toDateString();

@@ -48,4 +48,9 @@ export const authApi = {
   me: () => apiFetch("/auth/me"),
 };
 
+export const mealsApi = {
+  list: () => apiFetch("/meals"),
+  create: (food, goal) => apiFetch("/meals", { method: "POST", body: { food, goal } }),
+};
+
 export { ApiError, apiFetch };
