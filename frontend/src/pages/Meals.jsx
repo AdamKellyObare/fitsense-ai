@@ -1,8 +1,13 @@
 import { useState } from "react";
+import { ApiError, mealsApi } from "../lib/api";
 
 function Meals({ meals, setMeals }) {
   const [search, setSearch] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [editFood, setEditFood] = useState("");
+  const [editGoal, setEditGoal] = useState("maintenance");
+  const [error, setError] = useState("");
 
   const filteredMeals = meals.filter((meal) => {
     const mealDate = new Date(meal.timestamp).toISOString().split("T")[0];
@@ -16,9 +21,40 @@ function Meals({ meals, setMeals }) {
     return matchesSearch && matchesDate;
   });
 
-  const deleteMeal = (indexToDelete) => {
-    const updatedMeals = meals.filter((_, index) => index !== indexToDelete);
-    setMeals(updatedMeals);
+  const deleteMeal = async (id) => {
+    setError("");
+    try {
+      await mealsApi.remove(id);
+      setMeals((prevMeals) => prevMeals.filter((meal) => meal.id !== id));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to delete meal.");
+    }
+  };
+
+  const startEdit = (meal) => {
+    setEditingId(meal.id);
+    setEditFood(meal.food);
+    setEditGoal(meal.goal);
+    setError("");
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+  };
+
+  const saveEdit = async (id) => {
+    setError("");
+    try {
+      const updatedMeal = await mealsApi.update(id, { food: editFood, goal: editGoal });
+      setMeals((prevMeals) =>
+        prevMeals.map((meal) =>
+          meal.id === id ? { ...updatedMeal, timestamp: updatedMeal.created_at } : meal
+        )
+      );
+      setEditingId(null);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to update meal.");
+    }
   };
 
   return (
@@ -55,6 +91,8 @@ function Meals({ meals, setMeals }) {
         </button>
       </div>
 
+      {error && <div style={styles.error}>{error}</div>}
+
       {filteredMeals.length === 0 ? (
         <div style={styles.emptyCard}>
           <h3>No meals found</h3>
@@ -62,33 +100,65 @@ function Meals({ meals, setMeals }) {
         </div>
       ) : (
         <div style={styles.grid}>
-          {filteredMeals.map((meal, index) => (
-            <div key={index} style={styles.card}>
-              <div style={styles.cardTop}>
-                <h3 style={styles.food}>{meal.food}</h3>
-                <span style={styles.goal}>{meal.goal}</span>
+          {filteredMeals.map((meal) =>
+            editingId === meal.id ? (
+              <div key={meal.id} style={styles.card}>
+                <input
+                  type="text"
+                  value={editFood}
+                  onChange={(e) => setEditFood(e.target.value)}
+                  style={styles.input}
+                />
+
+                <select
+                  value={editGoal}
+                  onChange={(e) => setEditGoal(e.target.value)}
+                  style={{ ...styles.input, marginTop: "12px" }}
+                >
+                  <option value="cutting">Cutting (Fat loss)</option>
+                  <option value="maintenance">Maintenance</option>
+                  <option value="bulking">Bulking (Muscle gain)</option>
+                </select>
+
+                <div style={styles.editActions}>
+                  <button onClick={() => saveEdit(meal.id)} style={styles.saveButton}>
+                    Save
+                  </button>
+                  <button onClick={cancelEdit} style={styles.clearButton}>
+                    Cancel
+                  </button>
+                </div>
               </div>
+            ) : (
+              <div key={meal.id} style={styles.card}>
+                <div style={styles.cardTop}>
+                  <h3 style={styles.food}>{meal.food}</h3>
+                  <span style={styles.goal}>{meal.goal}</span>
+                </div>
 
-              <div style={styles.calories}>{meal.calories} kcal</div>
+                <div style={styles.calories}>{meal.calories} kcal</div>
 
-              <div style={styles.macros}>
-                <span>🥩 {meal.protein || 0}g</span>
-                <span>🍚 {meal.carbs || 0}g</span>
-                <span>🥑 {meal.fat || 0}g</span>
+                <div style={styles.macros}>
+                  <span>🥩 {meal.protein || 0}g</span>
+                  <span>🍚 {meal.carbs || 0}g</span>
+                  <span>🥑 {meal.fat || 0}g</span>
+                </div>
+
+                <p style={styles.date}>
+                  {new Date(meal.timestamp).toLocaleString()}
+                </p>
+
+                <div style={styles.cardActions}>
+                  <button onClick={() => startEdit(meal)} style={styles.editButton}>
+                    Edit
+                  </button>
+                  <button onClick={() => deleteMeal(meal.id)} style={styles.deleteButton}>
+                    Delete meal
+                  </button>
+                </div>
               </div>
-
-              <p style={styles.date}>
-                {new Date(meal.timestamp).toLocaleString()}
-              </p>
-
-              <button
-                onClick={() => deleteMeal(index)}
-                style={styles.deleteButton}
-              >
-                Delete meal
-              </button>
-            </div>
-          ))}
+            )
+          )}
         </div>
       )}
     </div>
@@ -215,15 +285,56 @@ page: {
   },
 
   deleteButton: {
-    width: "100%",
+    flex: 1,
     padding: "10px",
-    marginTop: "12px",
     borderRadius: "12px",
     border: "none",
     background: "#ef4444",
     color: "white",
     cursor: "pointer",
     fontWeight: "bold",
+  },
+
+  editButton: {
+    flex: 1,
+    padding: "10px",
+    borderRadius: "12px",
+    border: "none",
+    background: "#334155",
+    color: "white",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+
+  cardActions: {
+    display: "flex",
+    gap: "10px",
+    marginTop: "12px",
+  },
+
+  editActions: {
+    display: "flex",
+    gap: "10px",
+    marginTop: "12px",
+  },
+
+  saveButton: {
+    flex: 1,
+    padding: "12px 18px",
+    borderRadius: "12px",
+    border: "none",
+    background: "#00c46a",
+    color: "white",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+
+  error: {
+    marginBottom: "20px",
+    padding: "14px",
+    borderRadius: "12px",
+    background: "rgba(239,68,68,0.12)",
+    color: "#ef4444",
   },
 
   emptyCard: {

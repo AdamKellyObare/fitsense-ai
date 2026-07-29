@@ -51,6 +51,8 @@ export const authApi = {
 export const mealsApi = {
   list: () => apiFetch("/meals"),
   create: (food, goal) => apiFetch("/meals", { method: "POST", body: { food, goal } }),
+  update: (id, { food, goal }) => apiFetch(`/meals/${id}`, { method: "PATCH", body: { food, goal } }),
+  remove: (id) => apiFetch(`/meals/${id}`, { method: "DELETE" }),
 };
 
 export { ApiError, apiFetch };

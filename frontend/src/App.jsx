@@ -132,10 +132,13 @@ function App() {
   const caloriesRemaining =
     numericGoal - totalCaloriesToday > 0 ? numericGoal - totalCaloriesToday : 0;
 
-  const deleteMeal = (indexToDelete) => {
-    setMeals((prevMeals) =>
-      prevMeals.filter((_, index) => index !== indexToDelete)
-    );
+  const deleteMeal = async (id) => {
+    try {
+      await mealsApi.remove(id);
+      setMeals((prevMeals) => prevMeals.filter((meal) => meal.id !== id));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to delete meal.");
+    }
   };
 
   const styles = getStyles(darkMode, isMobile);

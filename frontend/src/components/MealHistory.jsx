@@ -30,7 +30,7 @@ function MealHistory({ meals, onDelete }) {
           )}
 
           <button
-            onClick={() => onDelete(idx)}
+            onClick={() => onDelete(meal.id)}
             style={{
               marginTop: "10px",
               background: "grey",
