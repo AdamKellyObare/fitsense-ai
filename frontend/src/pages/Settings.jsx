@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AlertCircle, Check, Sparkles } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { ApiError } from "../lib/api";
 import { estimateTargets } from "../lib/targets";
@@ -104,6 +105,11 @@ function Settings() {
 
         {status && (
           <div style={status.type === "error" ? styles.errorBanner : styles.successBanner}>
+            {status.type === "error" ? (
+              <AlertCircle size={17} strokeWidth={2.5} />
+            ) : (
+              <Check size={17} strokeWidth={2.5} />
+            )}
             {status.message}
           </div>
         )}
@@ -171,7 +177,7 @@ function Settings() {
         <h3 style={styles.sectionTitle}>Targets</h3>
 
         <button style={styles.autoCalcBtn} onClick={autoCalculate} type="button">
-          ✨ Auto-calculate from profile
+          <Sparkles size={16} strokeWidth={2.5} /> Auto-calculate from profile
         </button>
 
         <div style={styles.grid}>
@@ -230,7 +236,7 @@ page: {
   padding: "40px",
   maxWidth: "1100px",
   margin: "0 auto",
-  color: "white",
+  color: "var(--ink)",
   boxSizing: "border-box",
 },
 
@@ -239,22 +245,24 @@ page: {
   },
 
   title: {
-    fontSize: "48px",
+    fontSize: "32px",
     margin: 0,
   },
 
   subtitle: {
-    color: "#94a3b8",
+    color: "var(--graphite)",
     marginTop: "8px",
+    fontSize: "14px",
   },
 
 card: {
   width: "100%",
   maxWidth: "900px",
-  background: "rgba(255,255,255,0.07)",
+  background: "var(--paper-raised)",
   padding: "40px",
-  borderRadius: "22px",
-  border: "1px solid rgba(255,255,255,0.1)",
+  borderRadius: "var(--radius-lg)",
+  border: "1px solid var(--line)",
+  boxShadow: "var(--shadow)",
   boxSizing: "border-box",
 },
 
@@ -262,22 +270,21 @@ card: {
     width: "90px",
     height: "90px",
     borderRadius: "50%",
-    background: "linear-gradient(135deg,#34d399,#22c55e)",
+    background: "var(--oxblood)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    fontFamily: "var(--font-display)",
     fontSize: "36px",
-    fontWeight: "bold",
-    color: "#0f172a",
+    fontWeight: "700",
+    color: "#f5efe8",
     margin: "0 auto 30px",
-    boxShadow: "0 8px 25px rgba(52,211,153,0.3)",
   },
 
   sectionTitle: {
     marginTop: "24px",
     marginBottom: "14px",
-    fontSize: "22px",
-    fontWeight: "700",
+    fontSize: "20px",
   },
 
  grid: {
@@ -288,39 +295,54 @@ card: {
 input: {
   width: "100%",
   padding: "14px",
-  borderRadius: "12px",
-  border: "1px solid rgba(255,255,255,0.12)",
-  background: "#1e293b",
-  color: "white",
+  borderRadius: "var(--radius-md)",
+  border: "1px solid var(--line)",
+  background: "var(--paper)",
+  color: "var(--ink)",
   outline: "none",
+  fontFamily: "var(--font-body)",
+  fontSize: "14px",
   boxSizing: "border-box",
 },
 
   autoCalcBtn: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
     padding: "12px 18px",
     marginBottom: "14px",
-    borderRadius: "12px",
-    border: "1px solid rgba(52,211,153,0.4)",
-    background: "rgba(52,211,153,0.12)",
-    color: "#34d399",
+    borderRadius: "var(--radius-full)",
+    border: "1px solid rgba(var(--oxblood-rgb), 0.35)",
+    background: "rgba(var(--oxblood-rgb), 0.1)",
+    color: "var(--oxblood)",
     cursor: "pointer",
-    fontWeight: "bold",
+    fontWeight: "600",
+    fontSize: "14px",
   },
 
   errorBanner: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
     marginBottom: "20px",
     padding: "14px",
-    borderRadius: "12px",
-    background: "rgba(239,68,68,0.12)",
-    color: "#ef4444",
+    borderRadius: "var(--radius-md)",
+    background: "rgba(var(--oxblood-rgb), 0.1)",
+    color: "var(--oxblood)",
+    fontSize: "14px",
   },
 
   successBanner: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
     marginBottom: "20px",
     padding: "14px",
-    borderRadius: "12px",
-    background: "rgba(34,197,94,0.12)",
-    color: "#22c55e",
+    borderRadius: "var(--radius-md)",
+    background: "var(--paper)",
+    border: "1px solid var(--line)",
+    color: "var(--ink)",
+    fontSize: "14px",
   },
 
   actions: {
@@ -332,22 +354,24 @@ input: {
 
   saveBtn: {
     padding: "14px 24px",
-    borderRadius: "12px",
+    borderRadius: "var(--radius-full)",
     border: "none",
     cursor: "pointer",
-    background: "#22c55e",
-    color: "white",
-    fontWeight: "bold",
+    background: "var(--oxblood)",
+    color: "#f5efe8",
+    fontWeight: "600",
+    fontSize: "14px",
   },
 
   resetBtn: {
     padding: "14px 24px",
-    borderRadius: "12px",
-    border: "none",
+    borderRadius: "var(--radius-full)",
+    border: "1px solid var(--line)",
     cursor: "pointer",
-    background: "#334155",
-    color: "white",
-    fontWeight: "bold",
+    background: "transparent",
+    color: "var(--ink)",
+    fontWeight: "600",
+    fontSize: "14px",
   },
 };
 

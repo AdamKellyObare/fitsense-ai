@@ -1,59 +1,78 @@
 import { Link, useLocation } from "react-router-dom";
+import { BarChart3, LayoutDashboard, Settings, UtensilsCrossed } from "lucide-react";
+
+const NAV_ITEMS = [
+  { path: "/", label: "Overview", icon: (props) => <LayoutDashboard {...props} /> },
+  { path: "/meals", label: "Meals", icon: (props) => <UtensilsCrossed {...props} /> },
+  { path: "/analytics", label: "Analytics", icon: (props) => <BarChart3 {...props} /> },
+  { path: "/settings", label: "Settings", icon: (props) => <Settings {...props} /> },
+];
 
 function Sidebar() {
   const location = useLocation();
 
-  const menuItem = (path, label, icon) => (
-    <Link
-      to={path}
-      style={{
-        ...styles.link,
-        color: location.pathname === path ? "#00ff87" : "#aaa",
-        background:
-          location.pathname === path
-            ? "rgba(255,255,255,0.08)"
-            : "transparent",
-        fontWeight: location.pathname === path ? "bold" : "normal",
-      }}
-    >
-      {icon} {label}
-    </Link>
-  );
-
   return (
     <div style={styles.sidebar}>
-      <h3 style={{ marginBottom: "30px" }}>Dashboard</h3>
+      <h3 style={styles.brand}>Dashboard</h3>
 
-      {menuItem("/", "Overview", "🏠")}
-      {menuItem("/meals", "Meals", "🍽")}
-      {menuItem("/analytics", "Analytics", "📊")}
-      {menuItem("/settings", "Settings", "⚙")}
+      {NAV_ITEMS.map(({ path, label, icon }) => {
+        const active = location.pathname === path;
+        return (
+          <Link
+            key={path}
+            to={path}
+            style={{
+              ...styles.link,
+              ...(active ? styles.linkActive : {}),
+            }}
+          >
+            {icon({ size: 19, strokeWidth: active ? 2.6 : 2.3 })}
+            {label}
+          </Link>
+        );
+      })}
     </div>
   );
 }
 
 const styles = {
-sidebar: {
-  width: "240px",
-  background: "#181818",
-  padding: "30px 20px",
-  borderRight: "1px solid #333",
-  minHeight: "100vh",
-  position: "fixed",
-  left: 0,
-  top: 0,
-  bottom: 0,
-  boxSizing: "border-box",
-},
+  sidebar: {
+    width: "240px",
+    background: "var(--paper-raised)",
+    padding: "30px 20px",
+    borderRight: "1px solid var(--line)",
+    minHeight: "100vh",
+    position: "fixed",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    boxSizing: "border-box",
+  },
+
+  brand: {
+    marginBottom: "30px",
+    fontSize: "var(--text-subhead)",
+  },
 
   link: {
-    display: "block",
-    marginTop: "12px",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    marginTop: "4px",
     padding: "12px 14px",
-    borderRadius: "10px",
+    borderRadius: "var(--radius-sm)",
     cursor: "pointer",
     textDecoration: "none",
-    transition: "0.2s",
+    fontSize: "14px",
+    fontWeight: "500",
+    color: "var(--graphite)",
+    transition: "background var(--duration-hover) ease, color var(--duration-hover) ease",
+  },
+
+  linkActive: {
+    color: "var(--oxblood)",
+    background: "rgba(var(--oxblood-rgb), 0.1)",
+    fontWeight: "600",
   },
 };
 

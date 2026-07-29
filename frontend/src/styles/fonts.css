@@ -1,0 +1,39 @@
+@font-face {
+  font-family: "Big Shoulders";
+  font-weight: 600 800;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/BigShouldersDisplay-Variable.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Plex Sans";
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/IBMPlexSans-Variable.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Plex Mono";
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/IBMPlexMono-Regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Plex Mono";
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/IBMPlexMono-Medium.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Plex Mono";
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/IBMPlexMono-SemiBold.woff2") format("woff2");
+}

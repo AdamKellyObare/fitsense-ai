@@ -1,16 +1,24 @@
+import { useViewport } from "../hooks/useViewport";
+
 function TopBar({ userEmail, onLogout }) {
+  const { isMobile } = useViewport();
+
   return (
-    <div style={styles.topbar}>
+    <div style={{ ...styles.topbar, padding: isMobile ? "0 16px" : "0 40px" }}>
       <div style={styles.brand}>
         <div style={styles.logo}>F</div>
-        <div>
+        <div style={styles.brandText}>
           <h2 style={styles.title}>FitSense AI</h2>
-          <p style={styles.subtitle}>AI-powered nutrition tracking</p>
+          {!isMobile && <p style={styles.subtitle}>AI-powered nutrition tracking</p>}
         </div>
       </div>
 
       <div style={styles.rightSide}>
-        {userEmail && <span style={styles.status}>{userEmail}</span>}
+        {userEmail && (
+          <span style={{ ...styles.status, maxWidth: isMobile ? "110px" : "260px" }}>
+            {userEmail}
+          </span>
+        )}
         {onLogout && (
           <button onClick={onLogout} style={styles.logoutButton}>
             Log out
@@ -28,9 +36,9 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "0 40px",
-    background: "rgba(18, 18, 18, 0.9)",
-    borderBottom: "1px solid rgba(255,255,255,0.08)",
+    gap: "12px",
+    background: "var(--paper-raised)",
+    borderBottom: "1px solid var(--line)",
     boxSizing: "border-box",
   },
 
@@ -38,53 +46,70 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "12px",
+    minWidth: 0,
+  },
+
+  brandText: {
+    minWidth: 0,
   },
 
   logo: {
     width: "38px",
     height: "38px",
-    borderRadius: "12px",
-    background: "linear-gradient(135deg, #00ff87, #60efff)",
-    color: "#07111f",
+    borderRadius: "var(--radius-sm)",
+    background: "var(--oxblood)",
+    color: "var(--paper-raised)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontWeight: "900",
+    fontFamily: "var(--font-display)",
+    fontWeight: "800",
+    flexShrink: 0,
   },
 
   title: {
     margin: 0,
-    fontSize: "20px",
+    fontSize: "18px",
     lineHeight: "22px",
+    whiteSpace: "nowrap",
   },
 
   subtitle: {
     margin: 0,
-    color: "#94a3b8",
-    fontSize: "12px",
+    color: "var(--graphite)",
+    fontFamily: "var(--font-mono)",
+    fontSize: "11px",
+    letterSpacing: "0.04em",
+    whiteSpace: "nowrap",
   },
 
   rightSide: {
     display: "flex",
     alignItems: "center",
-    gap: "16px",
+    gap: "12px",
+    flexShrink: 0,
   },
 
   status: {
-    color: "#94a3b8",
-    fontWeight: "600",
-    fontSize: "14px",
+    color: "var(--graphite)",
+    fontFamily: "var(--font-mono)",
+    fontSize: "13px",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
 
   logoutButton: {
-    padding: "8px 14px",
-    borderRadius: "10px",
-    border: "1px solid rgba(255,255,255,0.12)",
-    background: "rgba(255,255,255,0.06)",
-    color: "white",
+    padding: "9px 16px",
+    borderRadius: "var(--radius-full)",
+    border: "1px solid var(--line)",
+    background: "transparent",
+    color: "var(--ink)",
     cursor: "pointer",
-    fontWeight: "700",
+    fontWeight: "600",
     fontSize: "13px",
+    flexShrink: 0,
+    transition: "border-color var(--duration-hover) ease, transform var(--duration-hover) var(--ease-out)",
   },
 };
 

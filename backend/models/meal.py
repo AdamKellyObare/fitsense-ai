@@ -23,5 +23,6 @@ class Meal(Base):
     fat: Mapped[Optional[int]]
 
     source: Mapped[str] = mapped_column(String(20), default="ai_pending")
+    photo_key: Mapped[Optional[str]] = mapped_column(String(40))
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)

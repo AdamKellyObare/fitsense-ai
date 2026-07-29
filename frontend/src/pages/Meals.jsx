@@ -1,5 +1,19 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
+import { Beef, Droplets, Pencil, Trash2, Wheat } from "lucide-react";
 import { ApiError, mealsApi } from "../lib/api";
+
+const MotionDiv = motion.div;
+
+const fadeRiseGroup = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.04 } },
+};
+
+const fadeRiseItem = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+};
 
 function Meals({ meals, setMeals }) {
   const [search, setSearch] = useState("");
@@ -97,10 +111,10 @@ function Meals({ meals, setMeals }) {
           <p>Log a meal from the Overview page and it will appear here.</p>
         </div>
       ) : (
-        <div style={styles.grid}>
+        <MotionDiv style={styles.grid} variants={fadeRiseGroup} initial="hidden" animate="visible">
           {filteredMeals.map((meal) =>
             editingId === meal.id ? (
-              <div key={meal.id} style={styles.card}>
+              <MotionDiv key={meal.id} variants={fadeRiseItem} style={styles.card}>
                 <input
                   type="text"
                   value={editFood}
@@ -116,38 +130,51 @@ function Meals({ meals, setMeals }) {
                     Cancel
                   </button>
                 </div>
-              </div>
+              </MotionDiv>
             ) : (
-              <div key={meal.id} style={styles.card}>
-                <div style={styles.cardTop}>
+              <MotionDiv
+                key={meal.id}
+                variants={fadeRiseItem}
+                style={styles.card}
+                whileHover={{ y: -3, boxShadow: "var(--shadow-lg)" }}
+                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <img
+                  src={`/food/${meal.photo_key || "generic-1"}.jpg`}
+                  alt={meal.food}
+                  style={styles.photo}
+                />
+
+                <div style={styles.cardBody}>
                   <h3 style={styles.food}>{meal.food}</h3>
-                  <span style={styles.goal}>{meal.goal}</span>
+
+                  <div style={styles.calories}>
+                    {meal.calories} <span style={styles.caloriesUnit}>kcal</span>
+                  </div>
+
+                  <div style={styles.macros}>
+                    <span style={styles.macroItem}><Beef size={14} strokeWidth={2.4} /> {meal.protein || 0}g</span>
+                    <span style={styles.macroItem}><Wheat size={14} strokeWidth={2.4} /> {meal.carbs || 0}g</span>
+                    <span style={styles.macroItem}><Droplets size={14} strokeWidth={2.4} /> {meal.fat || 0}g</span>
+                  </div>
+
+                  <p style={styles.meta}>
+                    {meal.goal} · {new Date(meal.timestamp).toLocaleString()}
+                  </p>
+
+                  <div style={styles.cardActions}>
+                    <button onClick={() => startEdit(meal)} style={styles.editButton}>
+                      <Pencil size={15} strokeWidth={2.4} /> Edit
+                    </button>
+                    <button onClick={() => deleteMeal(meal.id)} style={styles.deleteButton}>
+                      <Trash2 size={15} strokeWidth={2.4} /> Delete
+                    </button>
+                  </div>
                 </div>
-
-                <div style={styles.calories}>{meal.calories} kcal</div>
-
-                <div style={styles.macros}>
-                  <span>🥩 {meal.protein || 0}g</span>
-                  <span>🍚 {meal.carbs || 0}g</span>
-                  <span>🥑 {meal.fat || 0}g</span>
-                </div>
-
-                <p style={styles.date}>
-                  {new Date(meal.timestamp).toLocaleString()}
-                </p>
-
-                <div style={styles.cardActions}>
-                  <button onClick={() => startEdit(meal)} style={styles.editButton}>
-                    Edit
-                  </button>
-                  <button onClick={() => deleteMeal(meal.id)} style={styles.deleteButton}>
-                    Delete meal
-                  </button>
-                </div>
-              </div>
+              </MotionDiv>
             )
           )}
-        </div>
+        </MotionDiv>
       )}
     </div>
   );
@@ -156,7 +183,7 @@ function Meals({ meals, setMeals }) {
 const styles = {
 page: {
   padding: "40px",
-  color: "white",
+  color: "var(--ink)",
   width: "100%",
   maxWidth: "1100px",
   margin: "0 auto",
@@ -173,21 +200,24 @@ page: {
   },
 
   title: {
-    fontSize: "34px",
+    fontSize: "32px",
     margin: 0,
   },
 
   subtitle: {
-    color: "#94a3b8",
+    color: "var(--graphite)",
     marginTop: "8px",
+    fontSize: "14px",
   },
 
   badge: {
-    padding: "10px 14px",
-    borderRadius: "999px",
-    background: "rgba(0,255,135,0.12)",
-    color: "#00ff87",
-    fontWeight: "bold",
+    padding: "9px 14px",
+    borderRadius: "var(--radius-full)",
+    background: "rgba(var(--oxblood-rgb), 0.1)",
+    color: "var(--oxblood)",
+    fontFamily: "var(--font-mono)",
+    fontSize: "13px",
+    fontWeight: "600",
   },
 
   controls: {
@@ -199,21 +229,25 @@ page: {
 
   input: {
     padding: "12px",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.12)",
-    background: "rgba(255,255,255,0.07)",
-    color: "white",
+    borderRadius: "var(--radius-md)",
+    border: "1px solid var(--line)",
+    background: "var(--paper-raised)",
+    color: "var(--ink)",
     outline: "none",
     minWidth: "180px",
+    fontFamily: "var(--font-body)",
+    fontSize: "14px",
   },
 
   clearButton: {
     padding: "12px 18px",
-    borderRadius: "12px",
-    border: "none",
-    background: "#334155",
-    color: "white",
+    borderRadius: "var(--radius-md)",
+    border: "1px solid var(--line)",
+    background: "var(--paper-raised)",
+    color: "var(--ink)",
     cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "13px",
   },
 
   grid: {
@@ -223,115 +257,139 @@ page: {
   },
 
   card: {
-    padding: "20px",
-    borderRadius: "18px",
-    background: "rgba(255,255,255,0.07)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    boxShadow: "0 12px 30px rgba(0,0,0,0.25)",
+    borderRadius: "var(--radius-lg)",
+    background: "var(--paper-raised)",
+    border: "1px solid var(--line)",
+    boxShadow: "var(--shadow)",
+    overflow: "hidden",
   },
 
-  cardTop: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: "10px",
+  photo: {
+    width: "100%",
+    height: "150px",
+    objectFit: "cover",
+    display: "block",
+  },
+
+  cardBody: {
+    padding: "18px",
   },
 
   food: {
     margin: 0,
-    fontSize: "20px",
-  },
-
-  goal: {
-    fontSize: "12px",
-    padding: "6px 10px",
-    borderRadius: "999px",
-    background: "rgba(255,255,255,0.1)",
-    textTransform: "capitalize",
+    fontSize: "17px",
+    fontWeight: "600",
   },
 
   calories: {
-    fontSize: "28px",
-    fontWeight: "bold",
-    color: "#00ff87",
-    marginTop: "16px",
+    fontFamily: "var(--font-display)",
+    fontWeight: "700",
+    fontSize: "26px",
+    color: "var(--ink)",
+    marginTop: "12px",
+  },
+
+  caloriesUnit: {
+    fontFamily: "var(--font-mono)",
+    fontWeight: "500",
+    fontSize: "13px",
+    color: "var(--graphite)",
   },
 
   macros: {
     display: "flex",
-    justifyContent: "space-between",
-    marginTop: "18px",
-    color: "#cbd5e1",
+    gap: "14px",
+    marginTop: "12px",
     flexWrap: "wrap",
-    gap: "8px",
   },
 
-  date: {
-    color: "#94a3b8",
-    fontSize: "13px",
-    marginTop: "18px",
+  macroItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: "5px",
+    fontFamily: "var(--font-mono)",
+    fontSize: "12px",
+    color: "var(--graphite)",
+  },
+
+  meta: {
+    color: "var(--graphite)",
+    fontSize: "12px",
+    marginTop: "14px",
+    textTransform: "capitalize",
   },
 
   deleteButton: {
     flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "6px",
     padding: "10px",
-    borderRadius: "12px",
-    border: "none",
-    background: "#ef4444",
-    color: "white",
+    borderRadius: "var(--radius-sm)",
+    border: "1px solid var(--line)",
+    background: "transparent",
+    color: "var(--oxblood)",
     cursor: "pointer",
-    fontWeight: "bold",
+    fontWeight: "600",
+    fontSize: "13px",
   },
 
   editButton: {
     flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "6px",
     padding: "10px",
-    borderRadius: "12px",
-    border: "none",
-    background: "#334155",
-    color: "white",
+    borderRadius: "var(--radius-sm)",
+    border: "1px solid var(--line)",
+    background: "transparent",
+    color: "var(--ink)",
     cursor: "pointer",
-    fontWeight: "bold",
+    fontWeight: "600",
+    fontSize: "13px",
   },
 
   cardActions: {
     display: "flex",
     gap: "10px",
-    marginTop: "12px",
+    marginTop: "16px",
   },
 
   editActions: {
     display: "flex",
     gap: "10px",
     marginTop: "12px",
+    padding: "0 18px 18px",
   },
 
   saveButton: {
     flex: 1,
     padding: "12px 18px",
-    borderRadius: "12px",
+    borderRadius: "var(--radius-sm)",
     border: "none",
-    background: "#00c46a",
-    color: "white",
+    background: "var(--oxblood)",
+    color: "#f5efe8",
     cursor: "pointer",
-    fontWeight: "bold",
+    fontWeight: "600",
   },
 
   error: {
     marginBottom: "20px",
     padding: "14px",
-    borderRadius: "12px",
-    background: "rgba(239,68,68,0.12)",
-    color: "#ef4444",
+    borderRadius: "var(--radius-md)",
+    background: "rgba(var(--oxblood-rgb), 0.1)",
+    color: "var(--oxblood)",
   },
 
   emptyCard: {
     padding: "35px",
-    borderRadius: "18px",
-    background: "rgba(255,255,255,0.06)",
-    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: "var(--radius-lg)",
+    background: "var(--paper-raised)",
+    border: "1px solid var(--line)",
     textAlign: "center",
-    color: "#cbd5e1",
+    color: "var(--graphite)",
   },
 };
 

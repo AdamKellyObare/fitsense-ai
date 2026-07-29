@@ -14,6 +14,7 @@ from models.meal import Meal
 from models.user import User
 from schemas.meal import MealCreate, MealPublic, MealUpdate
 from services.ai_provider import estimate_calories
+from services.photo_matcher import pick_photo_key
 
 router = APIRouter(prefix="/meals", tags=["meals"])
 
@@ -43,6 +44,7 @@ async def log_meal(
         carbs=estimate["carbs"],
         fat=estimate["fat"],
         source="openai" if settings.USE_REAL_AI else "mock",
+        photo_key=pick_photo_key(payload.food),
     )
     db.add(meal)
     await db.commit()
@@ -80,6 +82,7 @@ async def update_meal(
         meal.carbs = estimate["carbs"]
         meal.fat = estimate["fat"]
         meal.source = "openai" if settings.USE_REAL_AI else "mock"
+        meal.photo_key = pick_photo_key(payload.food)
 
     await db.commit()
     await db.refresh(meal)

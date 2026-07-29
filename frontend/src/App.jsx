@@ -1,13 +1,19 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Beef, Droplet, Droplets, Flame, Sparkles, Wheat } from "lucide-react";
 
 import { useAuth } from "./context/AuthContext";
+import { useTheme } from "./hooks/useTheme";
+import { useViewport } from "./hooks/useViewport";
 import { ApiError, mealsApi } from "./lib/api";
 
 import FoodInput from "./components/FoodInput";
 import MealHistory from "./components/MealHistory";
+import ProgressRing from "./components/ProgressRing";
 import WeeklySummary from "./components/WeeklySummary";
 import Sidebar from "./components/Sidebar";
+import TabBar from "./components/TabBar";
 import TopBar from "./components/TopBar";
 import StatCard from "./components/StatCard";
 import ThemeToggle from "./components/ThemeToggle";
@@ -18,33 +24,33 @@ import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
+const MotionDiv = motion.div;
+
+const fadeRiseGroup = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.04 } },
+};
+
+const fadeRiseItem = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.62, ease: [0.16, 1, 0.3, 1] } },
+};
+
 function App() {
   const { user, loading: authLoading, logout } = useAuth();
-
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isMobile, isDesktop } = useViewport();
+  const { darkMode, toggle: toggleTheme } = useTheme();
 
   const [food, setFood] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem("fitsense_theme");
-    return saved ? JSON.parse(saved) : true;
-  });
-
   const [water, setWater] = useState(() => {
     return Number(localStorage.getItem("fitsense_water") || 0);
   });
 
   const [meals, setMeals] = useState([]);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 900);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -56,10 +62,6 @@ function App() {
       )
       .catch(() => setMeals([]));
   }, [user]);
-
-  useEffect(() => {
-    localStorage.setItem("fitsense_theme", JSON.stringify(darkMode));
-  }, [darkMode]);
 
   useEffect(() => {
     localStorage.setItem("fitsense_water", water);
@@ -124,6 +126,14 @@ function App() {
   const waterProgressPercent =
     user?.water_target_l > 0 ? Math.min((water / user.water_target_l) * 100, 100) : 0;
 
+  const proteinTarget = user?.protein_target || 0;
+  const carbTarget = user?.carb_target || 0;
+  const fatTarget = user?.fat_target || 0;
+
+  const proteinPercent = proteinTarget > 0 ? Math.min((totalProteinToday / proteinTarget) * 100, 100) : 0;
+  const carbPercent = carbTarget > 0 ? Math.min((totalCarbsToday / carbTarget) * 100, 100) : 0;
+  const fatPercent = fatTarget > 0 ? Math.min((totalFatToday / fatTarget) * 100, 100) : 0;
+
   const goalTips = {
     cutting: "You're cutting — prioritize protein to preserve muscle while in a deficit.",
     maintenance: "You're at maintenance — keep intake steady and consistent day to day.",
@@ -139,7 +149,7 @@ function App() {
     }
   };
 
-  const styles = getStyles(darkMode, isMobile);
+  const styles = getStyles(isMobile, isDesktop);
 
   if (authLoading) {
     return <div style={styles.authLoading}>Loading...</div>;
@@ -156,7 +166,7 @@ function App() {
 
   return (
     <div style={styles.page}>
-      {(!isMobile || sidebarOpen) && (
+      {isDesktop && (
         <div style={styles.sidebarWrapper}>
           <Sidebar />
         </div>
@@ -164,15 +174,6 @@ function App() {
 
       <div style={styles.mainArea}>
         <div style={styles.topBarWrapper}>
-          {isMobile && (
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              style={styles.menuButton}
-            >
-              ☰
-            </button>
-          )}
-
           <TopBar userEmail={user.email} onLogout={logout} />
         </div>
 
@@ -185,26 +186,87 @@ function App() {
                   <div style={{ ...styles.dashboard, ...styles.mobileStack }}>
                     <div style={styles.leftPanel}>
                       <WeeklySummary meals={meals} />
+
+                      <div style={styles.ringSection}>
+                        <h3 style={styles.ringSectionTitle}>Today's Progress</h3>
+
+                        <div style={styles.ringRow}>
+                          <ProgressRing
+                            value={totalCaloriesToday}
+                            max={calorieTarget}
+                            unit="kcal"
+                            caption={`of ${calorieTarget} kcal goal`}
+                          />
+
+                          <div style={styles.macroBars}>
+                            <div style={styles.macroBarRow}>
+                              <div style={styles.macroBarLabel}>
+                                <Beef size={14} strokeWidth={2.4} /> Protein
+                              </div>
+                              <div style={styles.progressBar}>
+                                <div style={{ ...styles.progressFill, width: `${proteinPercent}%` }} />
+                              </div>
+                              <span style={styles.macroBarValue}>{totalProteinToday}/{proteinTarget}g</span>
+                            </div>
+
+                            <div style={styles.macroBarRow}>
+                              <div style={styles.macroBarLabel}>
+                                <Wheat size={14} strokeWidth={2.4} /> Carbs
+                              </div>
+                              <div style={styles.progressBar}>
+                                <div style={{ ...styles.progressFill, width: `${carbPercent}%` }} />
+                              </div>
+                              <span style={styles.macroBarValue}>{totalCarbsToday}/{carbTarget}g</span>
+                            </div>
+
+                            <div style={styles.macroBarRow}>
+                              <div style={styles.macroBarLabel}>
+                                <Droplets size={14} strokeWidth={2.4} /> Fat
+                              </div>
+                              <div style={styles.progressBar}>
+                                <div style={{ ...styles.progressFill, width: `${fatPercent}%` }} />
+                              </div>
+                              <span style={styles.macroBarValue}>{totalFatToday}/{fatTarget}g</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <div style={styles.container}>
                       <h1 style={styles.title}>FitSense AI</h1>
 
                       <div style={{ marginBottom: "20px" }}>
-                        <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
+                        <ThemeToggle darkMode={darkMode} onToggle={toggleTheme} />
                       </div>
 
                       <p style={styles.subtitle}>
                         Smart calorie insights based on your fitness goal
                       </p>
 
-                      <div style={styles.statsRow}>
-                        <StatCard label="Calories" value={totalCaloriesToday} unit="kcal" icon="🔥" color="#00ff87" />
-                        <StatCard label="Protein" value={totalProteinToday} unit="g" icon="🥩" color="#60efff" />
-                        <StatCard label="Carbs" value={totalCarbsToday} unit="g" icon="🍚" color="#facc15" />
-                        <StatCard label="Fat" value={totalFatToday} unit="g" icon="🥑" color="#fb7185" />
-                        <StatCard label="Water" value={water} unit="L" icon="💧" color="#38bdf8" />
-                      </div>
+                      <MotionDiv
+                        style={styles.statsRow}
+                        variants={fadeRiseGroup}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, margin: "-40px" }}
+                      >
+                        <MotionDiv variants={fadeRiseItem} style={{ display: "flex", flex: 1 }}>
+                          <StatCard label="Calories" value={totalCaloriesToday} unit="kcal" icon={(p) => <Flame {...p} />} />
+                        </MotionDiv>
+                        <MotionDiv variants={fadeRiseItem} style={{ display: "flex", flex: 1 }}>
+                          <StatCard label="Protein" value={totalProteinToday} unit="g" icon={(p) => <Beef {...p} />} />
+                        </MotionDiv>
+                        <MotionDiv variants={fadeRiseItem} style={{ display: "flex", flex: 1 }}>
+                          <StatCard label="Carbs" value={totalCarbsToday} unit="g" icon={(p) => <Wheat {...p} />} />
+                        </MotionDiv>
+                        <MotionDiv variants={fadeRiseItem} style={{ display: "flex", flex: 1 }}>
+                          <StatCard label="Fat" value={totalFatToday} unit="g" icon={(p) => <Droplets {...p} />} />
+                        </MotionDiv>
+                        <MotionDiv variants={fadeRiseItem} style={{ display: "flex", flex: 1 }}>
+                          <StatCard label="Water" value={water} unit="L" icon={(p) => <Droplet {...p} />} />
+                        </MotionDiv>
+                      </MotionDiv>
 
                       <div style={styles.waterButtons}>
                         <button onClick={() => setWater(water + 0.25)} style={styles.smallButton}>
@@ -215,39 +277,39 @@ function App() {
                           +500ml
                         </button>
 
-                        <button onClick={() => setWater(0)} style={styles.resetWaterButton}>
+                        <button onClick={() => setWater(0)} style={styles.smallButton}>
                           Reset Water
                         </button>
                       </div>
 
                       <div style={styles.totalBox}>
-                        🔥 Today’s Total: {totalCaloriesToday} / {calorieTarget} kcal
-
-                        <div style={styles.progressBar}>
-                          <div
-                            style={{
-                              ...styles.progressFill,
-                              width: `${progressPercent}%`,
-                            }}
-                          />
-                        </div>
-
-                        <div style={{ marginTop: "16px" }}>
-                          💧 Water: {water}L / {user.water_target_l}L
+                        <div style={styles.totalRow}>
+                          <Flame size={17} strokeWidth={2.5} color="var(--ink)" />
+                          <span>
+                            Today's Total: <strong>{totalCaloriesToday}</strong> / {calorieTarget} kcal
+                          </span>
                         </div>
 
                         <div style={styles.progressBar}>
-                          <div
-                            style={{
-                              ...styles.progressFill,
-                              width: `${waterProgressPercent}%`,
-                            }}
-                          />
+                          <div style={{ ...styles.progressFill, width: `${progressPercent}%` }} />
+                        </div>
+
+                        <div style={{ ...styles.totalRow, marginTop: "16px" }}>
+                          <Droplet size={17} strokeWidth={2.5} color="var(--ink)" />
+                          <span>
+                            Water: <strong>{water}L</strong> / {user.water_target_l}L
+                          </span>
+                        </div>
+
+                        <div style={styles.progressBar}>
+                          <div style={{ ...styles.progressFill, width: `${waterProgressPercent}%` }} />
                         </div>
                       </div>
 
                       <div style={styles.aiCoach}>
-                        <h3>🤖 AI Coach</h3>
+                        <h3 style={styles.aiCoachTitle}>
+                          <Sparkles size={17} strokeWidth={2.5} /> AI Coach
+                        </h3>
                         <p>
                           You're <strong>{caloriesRemaining} kcal</strong> away from today's goal.
                         </p>
@@ -267,7 +329,14 @@ function App() {
                       {result && <div style={styles.result}>{result}</div>}
                       {error && <div style={styles.error}>{error}</div>}
 
-                      <MealHistory meals={meals} onDelete={deleteMeal} />
+                      <MotionDiv
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, margin: "-40px" }}
+                        variants={fadeRiseItem}
+                      >
+                        <MealHistory meals={meals} onDelete={deleteMeal} />
+                      </MotionDiv>
                     </div>
                   </div>
                 </div>
@@ -281,38 +350,37 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
+
+      {!isDesktop && <TabBar />}
     </div>
   );
 }
 
-const getStyles = (darkMode, isMobile) => ({
+const getStyles = (isMobile, isDesktop) => ({
   authLoading: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     width: "100vw",
     height: "100vh",
-    background: "#0f172a",
-    color: "white",
-    fontFamily: "Arial, sans-serif",
+    background: "var(--paper)",
+    color: "var(--ink)",
+    fontFamily: "var(--font-body)",
   },
 
   page: {
     display: "flex",
-    flexDirection: isMobile ? "column" : "row",
+    flexDirection: isDesktop ? "row" : "column",
     width: "100vw",
     minHeight: "100vh",
-    background: darkMode ? "#0f172a" : "#f3f4f6",
-    color: darkMode ? "white" : "#111",
+    background: "var(--paper)",
+    color: "var(--ink)",
     overflow: "hidden",
   },
 
   sidebarWrapper: {
-    width: isMobile ? "100%" : "240px",
+    width: "240px",
     flexShrink: 0,
-    borderRight: darkMode
-      ? "1px solid rgba(255,255,255,0.08)"
-      : "1px solid rgba(0,0,0,0.08)",
   },
 
   mainArea: {
@@ -321,55 +389,27 @@ const getStyles = (darkMode, isMobile) => ({
     flexDirection: "column",
     overflowY: "auto",
     paddingLeft: 0,
+    paddingBottom: isDesktop ? 0 : "78px",
     minWidth: 0,
   },
 
   topBarWrapper: {
     width: "100%",
-    height: "72px",
-    minHeight: "72px",
-    display: "flex",
-    alignItems: "center",
-    padding: 0,
-    margin: 0,
-    background: darkMode ? "rgba(18,18,18,0.95)" : "rgba(255,255,255,0.95)",
-    borderBottom: darkMode
-      ? "1px solid rgba(255,255,255,0.08)"
-      : "1px solid rgba(0,0,0,0.08)",
     position: "sticky",
     top: 0,
     zIndex: 50,
   },
 
-  menuButton: {
-    fontSize: "22px",
-    padding: "8px 14px",
-    borderRadius: "10px",
-    border: "none",
-    background: "rgba(255,255,255,0.1)",
-    color: "white",
-    cursor: "pointer",
-    marginLeft: "12px",
-  },
-
   contentArea: {
     flex: 1,
     overflowY: "auto",
-    padding: "40px 30px",
+    padding: isDesktop ? "40px 30px" : "24px 16px",
   },
 
   dashboardWrapper: {
     width: "93%",
     maxWidth: "1200px",
     margin: "0 auto",
-    padding: "30px",
-    background: darkMode ? "rgba(20,20,35,0.55)" : "rgba(255,255,255,0.55)",
-    backdropFilter: "blur(18px)",
-    WebkitBackdropFilter: "blur(18px)",
-    borderRadius: "20px",
-    border: darkMode
-      ? "1px solid rgba(255,255,255,0.08)"
-      : "1px solid rgba(255,255,255,0.4)",
   },
 
   dashboard: {
@@ -387,35 +427,88 @@ const getStyles = (darkMode, isMobile) => ({
 
   leftPanel: {
     padding: "25px",
-    borderRadius: "18px",
-    background: "rgba(255,255,255,0.05)",
-    border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: "var(--radius-lg)",
+    background: "var(--paper-raised)",
+    border: "1px solid var(--line)",
+    boxShadow: "var(--shadow)",
+    minWidth: 0,
+  },
+
+  ringSection: {
+    marginTop: "28px",
+    paddingTop: "24px",
+    borderTop: "1px solid var(--line)",
+  },
+
+  ringSectionTitle: {
+    fontSize: "16px",
+    marginBottom: "18px",
+  },
+
+  ringRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "28px",
+    flexWrap: "wrap",
+  },
+
+  macroBars: {
+    flex: 1,
+    minWidth: "180px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
+  },
+
+  macroBarRow: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+  },
+
+  macroBarLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    fontFamily: "var(--font-mono)",
+    fontSize: "11px",
+    color: "var(--graphite)",
+  },
+
+  macroBarValue: {
+    fontFamily: "var(--font-mono)",
+    fontSize: "11px",
+    color: "var(--graphite)",
+    alignSelf: "flex-end",
   },
 
   container: {
     padding: "30px",
     textAlign: "center",
-    fontFamily: "Arial, sans-serif",
-    borderRadius: "20px",
-    background: "rgba(255,255,255,0.06)",
-    border: "1px solid rgba(255,255,255,0.1)",
+    fontFamily: "var(--font-body)",
+    borderRadius: "var(--radius-lg)",
+    background: "var(--paper-raised)",
+    border: "1px solid var(--line)",
+    boxShadow: "var(--shadow)",
     maxWidth: "560px",
     margin: "0 auto",
+    minWidth: 0,
   },
 
   title: {
-    fontSize: "36px",
+    fontSize: "32px",
     marginBottom: "8px",
   },
 
   subtitle: {
-    color: darkMode ? "#94a3b8" : "#555",
+    color: "var(--graphite)",
     marginBottom: "30px",
+    fontSize: "14px",
   },
 
   statsRow: {
     display: "flex",
-    gap: "15px",
+    gap: "12px",
     marginTop: "20px",
     marginBottom: "20px",
     flexWrap: "wrap",
@@ -431,66 +524,76 @@ const getStyles = (darkMode, isMobile) => ({
 
   smallButton: {
     padding: "10px 14px",
-    borderRadius: "10px",
-    border: "none",
-    background: "#334155",
-    color: "white",
+    borderRadius: "var(--radius-sm)",
+    border: "1px solid var(--line)",
+    background: "var(--paper)",
+    color: "var(--ink)",
     cursor: "pointer",
-    fontWeight: "bold",
-  },
-
-  resetWaterButton: {
-    padding: "10px 14px",
-    borderRadius: "10px",
-    border: "none",
-    background: "#ef4444",
-    color: "white",
-    cursor: "pointer",
-    fontWeight: "bold",
+    fontWeight: "600",
+    fontSize: "13px",
+    transition: "border-color var(--duration-hover) ease, transform var(--duration-hover) var(--ease-out)",
   },
 
   totalBox: {
     marginBottom: "20px",
-    padding: "20px",
-    borderRadius: "14px",
-    background: "rgba(0,0,0,0.35)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    fontWeight: "bold",
+    padding: "18px 20px",
+    borderRadius: "var(--radius-md)",
+    background: "var(--paper)",
+    border: "1px solid var(--line)",
+    textAlign: "left",
+  },
+
+  totalRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    fontSize: "14px",
   },
 
   progressBar: {
-    height: "12px",
-    background: "rgba(255,255,255,0.1)",
-    borderRadius: "10px",
-    marginTop: "12px",
+    height: "8px",
+    background: "var(--line)",
+    borderRadius: "var(--radius-full)",
+    marginTop: "10px",
     overflow: "hidden",
   },
 
   progressFill: {
     height: "100%",
-    background: "linear-gradient(90deg, #00ff87, #60efff)",
-    transition: "0.4s ease",
+    background: "var(--oxblood)",
+    borderRadius: "var(--radius-full)",
+    transition: "width 0.6s var(--ease-out)",
   },
 
   aiCoach: {
     textAlign: "left",
-    background: "rgba(255,255,255,0.07)",
-    padding: "20px",
-    borderRadius: "14px",
+    background: "var(--paper)",
+    padding: "18px 20px",
+    borderRadius: "var(--radius-md)",
     marginTop: "20px",
     marginBottom: "20px",
-    border: "1px solid rgba(255,255,255,0.1)",
+    border: "1px solid var(--line)",
+    fontSize: "14px",
+  },
+
+  aiCoachTitle: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    fontSize: "var(--text-subhead)",
   },
 
   result: {
     marginTop: "25px",
-    fontSize: "18px",
-    fontWeight: "bold",
+    fontSize: "15px",
+    fontWeight: "600",
+    color: "var(--ink)",
   },
 
   error: {
     marginTop: "20px",
-    color: "red",
+    color: "var(--oxblood)",
+    fontSize: "14px",
   },
 });
 

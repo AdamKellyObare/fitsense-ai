@@ -1,11 +1,28 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Beef, Flame, Sparkles } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useViewport } from "../hooks/useViewport";
 import { getAuthStyles } from "./authStyles";
 import PhoneMockup from "../components/PhoneMockup";
 
+const rise = {
+  hidden: { opacity: 0, y: 10 },
+  visible: (i = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.62, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] },
+  }),
+};
+
+const MotionDiv = motion.div;
+const MotionH1 = motion.h1;
+const MotionP = motion.p;
+const MotionForm = motion.form;
+
 function Login() {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
+  const { isMobile } = useViewport();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -13,12 +30,6 @@ function Login() {
 
   const { login } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 900);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const styles = getAuthStyles(isMobile);
 
@@ -50,24 +61,34 @@ function Login() {
 
       <div style={styles.loginHero}>
         <div style={styles.loginLeft}>
-          <div style={styles.loginBadge}>⭐ Welcome back</div>
+          <MotionDiv style={styles.loginBadge} variants={rise} initial="hidden" animate="visible" custom={0}>
+            <Sparkles size={14} strokeWidth={2.6} style={{ marginRight: "6px", verticalAlign: "-2px" }} />
+            Welcome back
+          </MotionDiv>
 
-          <h1 style={styles.loginHeroTitle}>
+          <MotionH1 style={styles.loginHeroTitle} variants={rise} initial="hidden" animate="visible" custom={1}>
             Track your calories smarter with FitSense AI
-          </h1>
+          </MotionH1>
 
-          <p style={styles.loginHeroText}>
+          <MotionP style={styles.loginHeroText} variants={rise} initial="hidden" animate="visible" custom={2}>
             Log meals, monitor macros, track water, view analytics, and get
             AI-powered nutrition insights from one clean dashboard.
-          </p>
+          </MotionP>
 
-          <div style={styles.trustStats}>
-            <span>🔥 Meal tracking</span>
-            <span>🥩 Macro insights</span>
-            <span>🤖 AI coach</span>
-          </div>
+          <MotionDiv style={styles.trustStats} variants={rise} initial="hidden" animate="visible" custom={3}>
+            <span style={styles.trustStatItem}><Flame size={15} strokeWidth={2.6} /> Meal tracking</span>
+            <span style={styles.trustStatItem}><Beef size={15} strokeWidth={2.6} /> Macro insights</span>
+            <span style={styles.trustStatItem}><Sparkles size={15} strokeWidth={2.6} /> AI coach</span>
+          </MotionDiv>
 
-          <form style={styles.loginAccessBox} onSubmit={handleSubmit}>
+          <MotionForm
+            style={styles.loginAccessBox}
+            onSubmit={handleSubmit}
+            variants={rise}
+            initial="hidden"
+            animate="visible"
+            custom={4}
+          >
             <label style={styles.loginLabel}>Email</label>
             <input
               type="email"
@@ -107,10 +128,16 @@ function Login() {
                 Sign up
               </Link>
             </div>
-          </form>
+          </MotionForm>
         </div>
 
-        <PhoneMockup styles={styles} />
+        <MotionDiv
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <PhoneMockup styles={styles} />
+        </MotionDiv>
       </div>
     </div>
   );

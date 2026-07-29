@@ -1,13 +1,24 @@
+// The auth hero is a deliberate, permanently-dark brand moment (like the
+// approved "Ledger" direction mockup) — it doesn't follow the app's
+// light/dark preference, so colors here are the dark-palette values
+// directly rather than the --token custom properties.
+const PAPER = "#13110d";
+const PAPER_RAISED = "#1c1912";
+const INK = "#f2f0e9";
+const GRAPHITE = "#a39c8c";
+const OXBLOOD = "#c1553c";
+const OXBLOOD_STRONG = "#d66b4f";
+const LINE = "#2a251c";
+
 export const getAuthStyles = (isMobile) => ({
   loginPage: {
     position: "fixed",
     inset: 0,
     width: "100vw",
     height: "100vh",
-    background:
-      "radial-gradient(circle at top left, rgba(34,197,94,0.18), transparent 35%), linear-gradient(135deg, #020617, #0f172a)",
-    color: "white",
-    fontFamily: "Arial, sans-serif",
+    background: PAPER,
+    color: INK,
+    fontFamily: "var(--font-body)",
     overflow: isMobile ? "auto" : "hidden",
     boxSizing: "border-box",
   },
@@ -26,20 +37,22 @@ export const getAuthStyles = (isMobile) => ({
     display: "flex",
     alignItems: "center",
     gap: "12px",
+    fontFamily: "var(--font-display)",
     fontSize: "24px",
-    fontWeight: "900",
+    fontWeight: "700",
   },
 
   loginBrandIcon: {
     width: "42px",
     height: "42px",
-    borderRadius: "14px",
-    background: "linear-gradient(135deg,#34d399,#22c55e)",
-    color: "#020617",
+    borderRadius: "var(--radius-md)",
+    background: OXBLOOD,
+    color: PAPER,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontWeight: "900",
+    fontFamily: "var(--font-display)",
+    fontWeight: "800",
   },
 
   loginHero: {
@@ -61,77 +74,97 @@ export const getAuthStyles = (isMobile) => ({
   loginBadge: {
     display: "inline-flex",
     padding: "8px 14px",
-    borderRadius: "999px",
-    background: "rgba(255,255,255,0.08)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    fontWeight: "700",
-    marginBottom: "14px",
+    borderRadius: "var(--radius-full)",
+    background: PAPER_RAISED,
+    border: `1px solid ${LINE}`,
+    fontFamily: "var(--font-mono)",
+    fontSize: "12px",
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
+    color: GRAPHITE,
+    marginBottom: "16px",
   },
 
   loginHeroTitle: {
-    fontSize: isMobile ? "38px" : "48px",
-    lineHeight: "1.05",
-    letterSpacing: "-1.3px",
-    margin: "0 0 12px",
-    fontWeight: "900",
+    fontFamily: "var(--font-display)",
+    fontSize: isMobile ? "44px" : "64px",
+    lineHeight: "0.95",
+    letterSpacing: "-0.01em",
+    margin: "0 0 14px",
+    fontWeight: "800",
   },
 
   loginHeroText: {
     fontSize: "16px",
-    lineHeight: "1.5",
-    color: "#94a3b8",
+    lineHeight: "1.55",
+    color: GRAPHITE,
     maxWidth: "560px",
-    marginBottom: "14px",
+    marginBottom: "16px",
   },
 
   trustStats: {
     display: "flex",
-    gap: "12px",
+    gap: "18px",
     flexWrap: "wrap",
-    marginBottom: "18px",
-    color: "#cbd5e1",
-    fontWeight: "700",
+    marginBottom: "20px",
+    color: GRAPHITE,
+    fontFamily: "var(--font-mono)",
+    fontSize: "12px",
+    letterSpacing: "0.06em",
+    textTransform: "uppercase",
+  },
+
+  trustStatItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
   },
 
   loginAccessBox: {
     width: "100%",
     maxWidth: "430px",
-    padding: "17px",
-    borderRadius: "20px",
-    background: "rgba(255,255,255,0.07)",
-    border: "1px solid rgba(255,255,255,0.12)",
+    padding: "20px",
+    borderRadius: "var(--radius-lg)",
+    background: PAPER_RAISED,
+    border: `1px solid ${LINE}`,
   },
 
   loginLabel: {
     display: "block",
     marginBottom: "8px",
-    marginTop: "12px",
-    color: "#cbd5e1",
-    fontWeight: "700",
+    marginTop: "14px",
+    fontFamily: "var(--font-mono)",
+    fontSize: "11px",
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
+    color: GRAPHITE,
   },
 
   loginInput: {
     width: "100%",
-    padding: "13px",
-    borderRadius: "13px",
-    border: "1px solid rgba(255,255,255,0.14)",
-    background: "#1e293b",
-    color: "white",
+    padding: "13px 14px",
+    borderRadius: "var(--radius-md)",
+    border: `1px solid ${LINE}`,
+    background: PAPER,
+    color: INK,
     outline: "none",
+    fontSize: "15px",
     boxSizing: "border-box",
+    transition: `border-color var(--duration-hover) ease, box-shadow var(--duration-hover) ease`,
   },
 
   loginButton: {
     width: "100%",
-    padding: "14px",
-    marginTop: "16px",
-    borderRadius: "13px",
+    padding: "15px",
+    marginTop: "18px",
+    borderRadius: "var(--radius-full)",
     border: "none",
     cursor: "pointer",
-    background: "linear-gradient(135deg,#22c55e,#16a34a)",
-    color: "white",
-    fontWeight: "900",
-    fontSize: "16px",
+    background: OXBLOOD,
+    color: "#f5efe8",
+    fontWeight: "600",
+    fontSize: "15px",
+    transition: `transform var(--duration-hover) var(--ease-out), background var(--duration-hover) ease, box-shadow var(--duration-hover) ease`,
   },
 
   loginButtonDisabled: {
@@ -140,15 +173,15 @@ export const getAuthStyles = (isMobile) => ({
   },
 
   switchLine: {
-    marginTop: "16px",
+    marginTop: "18px",
     textAlign: "center",
-    color: "#94a3b8",
+    color: GRAPHITE,
     fontSize: "14px",
   },
 
   switchLink: {
-    color: "#34d399",
-    fontWeight: "700",
+    color: OXBLOOD_STRONG,
+    fontWeight: "600",
     cursor: "pointer",
     background: "none",
     border: "none",
@@ -157,12 +190,12 @@ export const getAuthStyles = (isMobile) => ({
   },
 
   errorBox: {
-    marginTop: "12px",
-    padding: "10px 12px",
-    borderRadius: "10px",
-    background: "rgba(239,68,68,0.12)",
-    border: "1px solid rgba(239,68,68,0.3)",
-    color: "#fca5a5",
+    marginTop: "14px",
+    padding: "11px 13px",
+    borderRadius: "var(--radius-sm)",
+    background: "rgba(193,85,60,0.12)",
+    border: "1px solid rgba(193,85,60,0.3)",
+    color: OXBLOOD_STRONG,
     fontSize: "14px",
   },
 
@@ -172,278 +205,228 @@ export const getAuthStyles = (isMobile) => ({
     alignItems: "center",
   },
 
+  // ---- Realistic device frame ----
   phoneFrame: {
-    width: isMobile ? "310px" : "325px",
-    height: isMobile ? "630px" : "630px",
-    borderRadius: "50px",
-    padding: "7px",
-    background:
-      "linear-gradient(135deg, #64748b, #111827 35%, #020617 70%, #64748b)",
+    width: isMobile ? "355px" : "375px",
+    height: isMobile ? "728px" : "770px",
+    borderRadius: "62px",
+    padding: "14px",
+    background: "linear-gradient(155deg, #55524c 0%, #201d18 22%, #0c0b09 55%, #3a372f 100%)",
     boxShadow: "0 30px 80px rgba(0,0,0,0.55)",
     position: "relative",
     flexShrink: 0,
   },
 
+  phoneSideButton: {
+    position: "absolute",
+    background: "#100f0d",
+    border: "1px solid rgba(255,255,255,0.12)",
+  },
+
   phoneScreen: {
     width: "100%",
     height: "100%",
-    borderRadius: "43px",
-    background: "linear-gradient(180deg,#0f172a,#020617)",
+    borderRadius: "48px",
+    background: PAPER,
+    color: INK,
     overflow: "hidden",
-    padding: "13px",
-    boxSizing: "border-box",
     position: "relative",
   },
 
-  phoneStatusBar: {
-    height: "30px",
-    display: "grid",
-    gridTemplateColumns: "1fr auto 1fr",
-    alignItems: "center",
-    color: "white",
-    marginBottom: "7px",
-  },
-
-  phoneTime: {
-    fontSize: "12px",
-    fontWeight: "800",
-    paddingLeft: "4px",
-  },
-
-  dynamicIsland: {
-    width: "90px",
-    height: "25px",
-    borderRadius: "999px",
+  island: {
+    position: "absolute",
+    top: "14px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    width: "100px",
+    height: "28px",
+    borderRadius: "var(--radius-full)",
     background: "#000",
+    zIndex: 30,
   },
 
-  iosIcons: {
+  statusRow: {
+    position: "absolute",
+    top: "16px",
+    left: "20px",
+    right: "20px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    fontFamily: "var(--font-mono)",
+    fontSize: "12px",
+    fontWeight: "600",
+    color: INK,
+    zIndex: 20,
+  },
+
+  statusIcons: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "flex-end",
-    gap: "7px",
+    gap: "10px",
   },
 
-  cellularIcon: {
-    display: "flex",
-    alignItems: "flex-end",
-    gap: "2px",
-    height: "12px",
-  },
-
-  wifiSvg: {
-    fontSize: "14px",
-    fontWeight: "bold",
-    transform: "rotate(90deg)",
-    display: "inline-block",
-  },
-
-  batteryOuter: {
-    width: "23px",
-    height: "11px",
-    border: "1.6px solid white",
-    borderRadius: "4px",
-    position: "relative",
-    display: "inline-block",
-  },
-
-  batteryInner: {
+  homeIndicator: {
     position: "absolute",
-    left: "2px",
-    top: "2px",
-    width: "15px",
-    height: "5px",
-    borderRadius: "2px",
-    background: "white",
+    bottom: "9px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    width: "108px",
+    height: "4px",
+    borderRadius: "var(--radius-full)",
+    background: "rgba(242,240,233,0.4)",
+    zIndex: 30,
   },
 
-  batteryCap: {
-    position: "absolute",
-    right: "-4px",
-    top: "3px",
-    width: "2px",
-    height: "5px",
-    borderRadius: "2px",
-    background: "white",
-  },
-
-  phoneHeader: {
-    height: "40px",
-    display: "grid",
-    gridTemplateColumns: "34px 1fr 34px",
-    alignItems: "center",
-    marginBottom: "7px",
-  },
-
-  phoneTitle: {
-    textAlign: "center",
-    fontWeight: "800",
-    fontSize: "15px",
+  screenScroll: {
+    height: "100%",
+    overflow: "hidden",
+    padding: "56px 18px 28px",
+    boxSizing: "border-box",
   },
 
   iconCircle: {
-    width: "32px",
-    height: "32px",
+    width: "30px",
+    height: "30px",
     borderRadius: "50%",
     border: "none",
-    background: "rgba(255,255,255,0.13)",
-    color: "white",
-    fontSize: "15px",
-    fontWeight: "700",
+    background: "rgba(20,18,14,0.55)",
+    backdropFilter: "blur(6px)",
+    WebkitBackdropFilter: "blur(6px)",
+    color: INK,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
   },
 
-  scanCard: {
-    padding: "9px",
-    borderRadius: "19px",
-    background: "rgba(255,255,255,0.08)",
-    border: "1px solid rgba(255,255,255,0.1)",
-  },
-
-  scanCardTitle: {
-    color: "#e2e8f0",
-    fontWeight: "800",
-    fontSize: "14px",
-    marginBottom: "8px",
-  },
-
-  scanFrame: {
-    height: "178px",
-    borderRadius: "17px",
-    overflow: "hidden",
+  // Full-bleed hero photo: negative margins cancel screenScroll's own
+  // padding so the image reaches the phone's real edges (phoneScreen's own
+  // overflow:hidden + border-radius clips the top corners correctly).
+  heroImageWrap: {
     position: "relative",
-    border: "1px solid rgba(255,255,255,0.18)",
+    margin: "-56px -18px 0 -18px",
+    height: "360px",
+    overflow: "hidden",
   },
 
   mealImage: {
+    position: "absolute",
+    inset: 0,
     width: "100%",
     height: "100%",
     objectFit: "cover",
     display: "block",
   },
 
-  scanOverlay: {
+  heroHeaderRow: {
     position: "absolute",
-    inset: 0,
-    background:
-      "linear-gradient(to bottom, rgba(0,0,0,0.04), rgba(0,0,0,0.18))",
+    top: "58px",
+    left: "18px",
+    right: "18px",
+    display: "flex",
+    justifyContent: "space-between",
+    zIndex: 3,
   },
 
-  foodLabelOne: {
+  heroFade: {
     position: "absolute",
-    top: "14px",
-    left: "12px",
-    padding: "6px 9px",
-    borderRadius: "999px",
-    background: "rgba(255,255,255,0.94)",
-    color: "#111827",
-    fontWeight: "900",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: "150px",
+    background: `linear-gradient(to bottom, rgba(19,17,13,0) 0%, ${PAPER} 92%)`,
+    zIndex: 2,
+  },
+
+  foodLabel: {
+    position: "absolute",
+    zIndex: 3,
+    padding: "5px 9px",
+    borderRadius: "var(--radius-full)",
+    background: "rgba(242,240,233,0.95)",
+    color: PAPER,
+    fontFamily: "var(--font-mono)",
+    fontWeight: "600",
     fontSize: "10px",
-  },
-
-  foodLabelTwo: {
-    position: "absolute",
-    right: "10px",
-    top: "72px",
-    padding: "6px 9px",
-    borderRadius: "999px",
-    background: "rgba(255,255,255,0.94)",
-    color: "#111827",
-    fontWeight: "900",
-    fontSize: "10px",
-  },
-
-  foodLabelFour: {
-    position: "absolute",
-    left: "14px",
-    bottom: "18px",
-    padding: "6px 9px",
-    borderRadius: "999px",
-    background: "rgba(255,255,255,0.94)",
-    color: "#111827",
-    fontWeight: "900",
-    fontSize: "10px",
-  },
-
-  scanCornerTopLeft: {
-    position: "absolute",
-    top: "54px",
-    left: "52px",
-    width: "26px",
-    height: "26px",
-    borderTop: "3px solid white",
-    borderLeft: "3px solid white",
-  },
-
-  scanCornerTopRight: {
-    position: "absolute",
-    top: "54px",
-    right: "52px",
-    width: "26px",
-    height: "26px",
-    borderTop: "3px solid white",
-    borderRight: "3px solid white",
-  },
-
-  scanCornerBottomLeft: {
-    position: "absolute",
-    bottom: "39px",
-    left: "52px",
-    width: "26px",
-    height: "26px",
-    borderBottom: "3px solid white",
-    borderLeft: "3px solid white",
-  },
-
-  scanCornerBottomRight: {
-    position: "absolute",
-    bottom: "39px",
-    right: "52px",
-    width: "26px",
-    height: "26px",
-    borderBottom: "3px solid white",
-    borderRight: "3px solid white",
   },
 
   previewStats: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
-    gap: "9px",
+    gap: "8px",
     marginTop: "10px",
   },
 
   previewStat: {
-    padding: "9px",
+    padding: "9px 10px",
     borderRadius: "14px",
-    background: "rgba(255,255,255,0.08)",
-    border: "1px solid rgba(255,255,255,0.1)",
+    background: PAPER_RAISED,
+    border: `1px solid ${LINE}`,
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+
+  previewStatLabel: {
     display: "flex",
     flexDirection: "column",
-    gap: "3px",
-    color: "#94a3b8",
+    gap: "1px",
+  },
+
+  previewStatKey: {
+    fontFamily: "var(--font-mono)",
+    fontSize: "10px",
+    color: GRAPHITE,
+  },
+
+  previewStatValue: {
+    fontFamily: "var(--font-mono)",
+    fontWeight: "600",
     fontSize: "13px",
   },
 
   aiPreview: {
     marginTop: "10px",
-    padding: "11px",
+    padding: "12px",
     borderRadius: "15px",
-    background: "rgba(34,197,94,0.12)",
-    border: "1px solid rgba(34,197,94,0.2)",
-    color: "#e2e8f0",
+    background: "rgba(193,85,60,0.12)",
+    border: "1px solid rgba(193,85,60,0.25)",
+    color: INK,
     fontSize: "13px",
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "8px",
   },
 
-  homeIndicator: {
-    position: "absolute",
-    bottom: "8px",
-    left: "50%",
-    transform: "translateX(-50%)",
-    width: "105px",
-    height: "4px",
-    borderRadius: "999px",
-    background: "rgba(255,255,255,0.45)",
+  heroActions: {
+    display: "flex",
+    gap: "10px",
+    marginTop: "14px",
+  },
+
+  heroActionGhost: {
+    flex: 1,
+    padding: "13px",
+    borderRadius: "var(--radius-full)",
+    border: `1px solid ${LINE}`,
+    background: "transparent",
+    color: INK,
+    fontFamily: "var(--font-body)",
+    fontWeight: "600",
+    fontSize: "13px",
+    cursor: "pointer",
+  },
+
+  heroActionPrimary: {
+    flex: 1,
+    padding: "13px",
+    borderRadius: "var(--radius-full)",
+    border: "none",
+    background: OXBLOOD,
+    color: "#f5efe8",
+    fontFamily: "var(--font-body)",
+    fontWeight: "600",
+    fontSize: "13px",
+    cursor: "pointer",
   },
 });

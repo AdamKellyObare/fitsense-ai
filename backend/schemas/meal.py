@@ -24,4 +24,5 @@ class MealPublic(BaseModel):
     carbs: Optional[int]
     fat: Optional[int]
     source: str
+    photo_key: Optional[str]
     created_at: datetime

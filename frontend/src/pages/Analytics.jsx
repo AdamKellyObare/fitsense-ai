@@ -1,4 +1,18 @@
+import { motion } from "framer-motion";
+import { Beef, Flame, Sparkles, Target, Trophy } from "lucide-react";
 import WeeklySummary from "../components/WeeklySummary";
+
+const MotionDiv = motion.div;
+
+const fadeRiseGroup = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.04 } },
+};
+
+const fadeRiseItem = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] } },
+};
 
 function Analytics({ meals, calorieTarget }) {
   const totalCalories = meals.reduce(
@@ -45,7 +59,6 @@ function Analytics({ meals, calorieTarget }) {
       "Your calorie intake is within a maintenance range. This is good for consistency and steady progress.";
   }
 
-
   return (
     <div style={styles.page}>
       <div style={styles.header}>
@@ -55,73 +68,65 @@ function Analytics({ meals, calorieTarget }) {
         </p>
       </div>
 
-      <div style={styles.statsGrid}>
-        <div style={styles.card}>
+      <MotionDiv style={styles.statsGrid} variants={fadeRiseGroup} initial="hidden" animate="visible">
+        <MotionDiv variants={fadeRiseItem} style={styles.card}>
           <p style={styles.label}>Average calories</p>
-          <h2 style={styles.value}>{averageCalories} kcal</h2>
-        </div>
+          <h2 style={styles.value}>{averageCalories} <span style={styles.unit}>kcal</span></h2>
+        </MotionDiv>
 
-        <div style={styles.card}>
+        <MotionDiv variants={fadeRiseItem} style={styles.card}>
           <p style={styles.label}>Meals logged</p>
           <h2 style={styles.value}>{meals.length}</h2>
-        </div>
+        </MotionDiv>
 
-        <div style={styles.card}>
+        <MotionDiv variants={fadeRiseItem} style={styles.card}>
           <p style={styles.label}>Total protein</p>
-          <h2 style={styles.value}>{totalProtein} g</h2>
-        </div>
+          <h2 style={styles.value}>{totalProtein} <span style={styles.unit}>g</span></h2>
+        </MotionDiv>
 
-        <div style={styles.card}>
+        <MotionDiv variants={fadeRiseItem} style={styles.card}>
           <p style={styles.label}>Active days</p>
           <h2 style={styles.value}>{uniqueDays.length}</h2>
-        </div>
-      </div>
+        </MotionDiv>
+      </MotionDiv>
 
       <div style={styles.chartCard}>
         <WeeklySummary meals={meals} />
       </div>
 
-      <div style={styles.insightGrid}>
+      <MotionDiv style={styles.insightGrid} variants={fadeRiseGroup} initial="hidden" animate="visible">
+        <MotionDiv variants={fadeRiseItem} style={styles.card}>
+          <p style={styles.label}><Flame size={15} strokeWidth={2.5} /> Current Streak</p>
+          <h2 style={styles.value}>{streak} <span style={styles.unit}>days</span></h2>
+        </MotionDiv>
 
-  <div style={styles.card}>
-    <p style={styles.label}>🔥 Current Streak</p>
-    <h2 style={styles.value}>{streak} days</h2>
-  </div>
+        <MotionDiv variants={fadeRiseItem} style={styles.card}>
+          <p style={styles.label}><Target size={15} strokeWidth={2.5} /> Goal Achievement</p>
+          <h2 style={styles.value}>{goalCompletion}<span style={styles.unit}>%</span></h2>
+        </MotionDiv>
 
-  <div style={styles.card}>
-    <p style={styles.label}>🎯 Goal Achievement</p>
-    <h2 style={styles.value}>{goalCompletion}%</h2>
-  </div>
+        <MotionDiv variants={fadeRiseItem} style={styles.card}>
+          <p style={styles.label}><Trophy size={15} strokeWidth={2.5} /> Best Meal</p>
+          <h2 style={styles.value}>{bestDayCalories} <span style={styles.unit}>kcal</span></h2>
+        </MotionDiv>
 
-  <div style={styles.card}>
-    <p style={styles.label}>🏆 Best Meal</p>
-    <h2 style={styles.value}>{bestDayCalories} kcal</h2>
-  </div>
+        <MotionDiv variants={fadeRiseItem} style={styles.card}>
+          <p style={styles.label}><Beef size={15} strokeWidth={2.5} /> Avg Protein</p>
+          <h2 style={styles.value}>{averageProtein} <span style={styles.unit}>g</span></h2>
+        </MotionDiv>
 
-  <div style={styles.card}>
-    <p style={styles.label}>🍗 Avg Protein</p>
-    <h2 style={styles.value}>{averageProtein} g</h2>
-  </div>
+        <MotionDiv variants={fadeRiseItem} style={styles.insightsCard}>
+          <h2 style={styles.insightsTitle}><Sparkles size={17} strokeWidth={2.5} /> AI Insights</h2>
 
-  <div style={styles.insightsCard}>
-  <h2 style={{ marginTop: 0 }}>🤖 AI Insights</h2>
-  
-
-  <ul style={styles.insightList}>
-    <li>{aiInsight}</li>
-    <li>You average {averageCalories} kcal per day.</li>
-    <li>You have logged {meals.length} meals so far.</li>
-    <li>Your average protein intake is {averageProtein} g.</li>
-    <li>Current consistency streak: {streak} days.</li>
-  </ul>
-</div>
-
-
-
-</div>
-
-
-
+          <ul style={styles.insightList}>
+            <li>{aiInsight}</li>
+            <li>You average {averageCalories} kcal per day.</li>
+            <li>You have logged {meals.length} meals so far.</li>
+            <li>Your average protein intake is {averageProtein} g.</li>
+            <li>Current consistency streak: {streak} days.</li>
+          </ul>
+        </MotionDiv>
+      </MotionDiv>
     </div>
   );
 }
@@ -129,7 +134,7 @@ function Analytics({ meals, calorieTarget }) {
 const styles = {
   page: {
     padding: "40px",
-    color: "white",
+    color: "var(--ink)",
     width: "100%",
     maxWidth: "1100px",
     margin: "0 auto",
@@ -141,35 +146,47 @@ const styles = {
   },
 
   insightGrid: {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: "18px",
-  marginTop: "25px",
-},
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "18px",
+    marginTop: "25px",
+  },
 
-insightsCard: {
-  marginTop: "25px",
-  padding: "25px",
-  borderRadius: "18px",
-  background: "rgba(255,255,255,0.07)",
-  border: "1px solid rgba(255,255,255,0.1)",
-  width: "100%",
-},
+  insightsCard: {
+    marginTop: "25px",
+    padding: "25px",
+    borderRadius: "var(--radius-lg)",
+    background: "var(--paper-raised)",
+    border: "1px solid var(--line)",
+    boxShadow: "var(--shadow)",
+    width: "100%",
+    gridColumn: "1 / -1",
+  },
 
-insightList: {
-  color: "#cbd5e1",
-  lineHeight: "2",
-  paddingLeft: "20px",
-},
+  insightsTitle: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    marginTop: 0,
+    fontSize: "var(--text-subhead)",
+  },
+
+  insightList: {
+    color: "var(--graphite)",
+    lineHeight: "2",
+    paddingLeft: "20px",
+    fontSize: "14px",
+  },
 
   title: {
-    fontSize: "34px",
+    fontSize: "32px",
     margin: 0,
   },
 
   subtitle: {
-    color: "#94a3b8",
+    color: "var(--graphite)",
     marginTop: "8px",
+    fontSize: "14px",
   },
 
   statsGrid: {
@@ -181,27 +198,44 @@ insightList: {
 
   card: {
     padding: "18px",
-    borderRadius: "18px",
-    background: "rgba(255,255,255,0.07)",
-    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: "var(--radius-lg)",
+    background: "var(--paper-raised)",
+    border: "1px solid var(--line)",
+    boxShadow: "var(--shadow)",
   },
 
   label: {
-    color: "#94a3b8",
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    color: "var(--graphite)",
+    fontFamily: "var(--font-mono)",
+    fontSize: "12px",
     margin: 0,
   },
 
   value: {
-    color: "#00ff87",
+    fontFamily: "var(--font-display)",
+    fontWeight: "700",
+    fontSize: "28px",
+    color: "var(--ink)",
     marginTop: "10px",
     marginBottom: 0,
   },
 
+  unit: {
+    fontFamily: "var(--font-mono)",
+    fontWeight: "500",
+    fontSize: "14px",
+    color: "var(--graphite)",
+  },
+
   chartCard: {
     padding: "25px",
-    borderRadius: "18px",
-    background: "rgba(255,255,255,0.07)",
-    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: "var(--radius-lg)",
+    background: "var(--paper-raised)",
+    border: "1px solid var(--line)",
+    boxShadow: "var(--shadow)",
   },
 };
 

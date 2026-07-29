@@ -1,0 +1,94 @@
+:root {
+  /* ---- Color: light ---- */
+  --paper: #eae9e4;
+  --paper-raised: #ffffff;
+  --ink: #17140f;
+  --graphite: #6b6558;
+  --oxblood: #7a2e1f;
+  --oxblood-strong: #5e2116;
+  --oxblood-rgb: 122, 46, 31;
+  --line: #d9d6cc;
+  --shadow: 0 1px 2px rgba(23, 20, 15, 0.06), 0 8px 24px rgba(23, 20, 15, 0.07);
+  --shadow-lg: 0 20px 60px rgba(23, 20, 15, 0.16);
+
+  /* ---- Type ---- */
+  --font-display: "Big Shoulders", system-ui, sans-serif;
+  --font-body: "Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "Plex Mono", ui-monospace, monospace;
+
+  --text-caption: 12px;
+  --text-label: 13px;
+  --text-body: 15px;
+  --text-body-lg: 16px;
+  --text-subhead: 20px;
+  --text-headline-sm: 28px;
+  --text-headline: 40px;
+  --text-hero-sm: 56px;
+  --text-hero: 80px;
+
+  /* ---- Spacing ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* ---- Radius ---- */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-full: 999px;
+
+  /* ---- Motion ---- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-entrance: 620ms;
+  --duration-hover: 220ms;
+  --duration-press: 110ms;
+  --duration-count: 800ms;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #13110d;
+    --paper-raised: #1c1912;
+    --ink: #f2f0e9;
+    --graphite: #a39c8c;
+    --oxblood: #c1553c;
+    --oxblood-strong: #d66b4f;
+    --oxblood-rgb: 193, 85, 60;
+    --line: #2a251c;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.55);
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #13110d;
+  --paper-raised: #1c1912;
+  --ink: #f2f0e9;
+  --graphite: #a39c8c;
+  --oxblood: #c1553c;
+  --oxblood-strong: #d66b4f;
+  --oxblood-rgb: 193, 85, 60;
+  --line: #2a251c;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+
+:root[data-theme="light"] {
+  --paper: #eae9e4;
+  --paper-raised: #ffffff;
+  --ink: #17140f;
+  --graphite: #6b6558;
+  --oxblood: #7a2e1f;
+  --oxblood-strong: #5e2116;
+  --oxblood-rgb: 122, 46, 31;
+  --line: #d9d6cc;
+  --shadow: 0 1px 2px rgba(23, 20, 15, 0.06), 0 8px 24px rgba(23, 20, 15, 0.07);
+  --shadow-lg: 0 20px 60px rgba(23, 20, 15, 0.16);
+}
