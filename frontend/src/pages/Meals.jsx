@@ -6,7 +6,6 @@ function Meals({ meals, setMeals }) {
   const [selectedDate, setSelectedDate] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editFood, setEditFood] = useState("");
-  const [editGoal, setEditGoal] = useState("maintenance");
   const [error, setError] = useState("");
 
   const filteredMeals = meals.filter((meal) => {
@@ -34,7 +33,6 @@ function Meals({ meals, setMeals }) {
   const startEdit = (meal) => {
     setEditingId(meal.id);
     setEditFood(meal.food);
-    setEditGoal(meal.goal);
     setError("");
   };
 
@@ -45,7 +43,7 @@ function Meals({ meals, setMeals }) {
   const saveEdit = async (id) => {
     setError("");
     try {
-      const updatedMeal = await mealsApi.update(id, { food: editFood, goal: editGoal });
+      const updatedMeal = await mealsApi.update(id, { food: editFood });
       setMeals((prevMeals) =>
         prevMeals.map((meal) =>
           meal.id === id ? { ...updatedMeal, timestamp: updatedMeal.created_at } : meal
@@ -109,16 +107,6 @@ function Meals({ meals, setMeals }) {
                   onChange={(e) => setEditFood(e.target.value)}
                   style={styles.input}
                 />
-
-                <select
-                  value={editGoal}
-                  onChange={(e) => setEditGoal(e.target.value)}
-                  style={{ ...styles.input, marginTop: "12px" }}
-                >
-                  <option value="cutting">Cutting (Fat loss)</option>
-                  <option value="maintenance">Maintenance</option>
-                  <option value="bulking">Bulking (Muscle gain)</option>
-                </select>
 
                 <div style={styles.editActions}>
                   <button onClick={() => saveEdit(meal.id)} style={styles.saveButton}>

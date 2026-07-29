@@ -1,6 +1,6 @@
 import WeeklySummary from "../components/WeeklySummary";
 
-function Analytics({ meals }) {
+function Analytics({ meals, calorieTarget }) {
   const totalCalories = meals.reduce(
     (sum, meal) => sum + (meal.calories || 0),
     0
@@ -26,10 +26,9 @@ function Analytics({ meals }) {
     0
   );
 
-  const goalCompletion = Math.min(
-    Math.round((averageCalories / 2000) * 100),
-    100
-  );
+  const goalCompletion = calorieTarget
+    ? Math.min(Math.round((averageCalories / calorieTarget) * 100), 100)
+    : 0;
 
   const streak = uniqueDays.length;
 

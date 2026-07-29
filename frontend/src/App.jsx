@@ -5,7 +5,6 @@ import { useAuth } from "./context/AuthContext";
 import { ApiError, mealsApi } from "./lib/api";
 
 import FoodInput from "./components/FoodInput";
-import GoalSelector from "./components/GoalSelector";
 import MealHistory from "./components/MealHistory";
 import WeeklySummary from "./components/WeeklySummary";
 import Sidebar from "./components/Sidebar";
@@ -26,7 +25,6 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [food, setFood] = useState("");
-  const [goal, setGoal] = useState("maintenance");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -34,11 +32,6 @@ function App() {
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem("fitsense_theme");
     return saved ? JSON.parse(saved) : true;
-  });
-
-  const [dailyGoal, setDailyGoal] = useState(() => {
-    const savedGoal = localStorage.getItem("fitsense_daily_goal");
-    return savedGoal ? Number(savedGoal) : 2000;
   });
 
   const [water, setWater] = useState(() => {
@@ -69,10 +62,6 @@ function App() {
   }, [darkMode]);
 
   useEffect(() => {
-    localStorage.setItem("fitsense_daily_goal", dailyGoal);
-  }, [dailyGoal]);
-
-  useEffect(() => {
     localStorage.setItem("fitsense_water", water);
   }, [water]);
 
@@ -84,12 +73,12 @@ function App() {
     setResult("");
 
     try {
-      const newMeal = await mealsApi.create(food, goal);
+      const newMeal = await mealsApi.create(food);
       setMeals((prevMeals) => [
         ...prevMeals,
         { ...newMeal, timestamp: newMeal.created_at },
       ]);
-      setResult(`Estimated calories for ${food}: ${newMeal.calories} kcal (${goal})`);
+      setResult(`Estimated calories for ${food}: ${newMeal.calories} kcal (${user.goal})`);
       setFood("");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to analyze meal.");
@@ -124,13 +113,22 @@ function App() {
     0
   );
 
-  const numericGoal = Number(dailyGoal);
+  const calorieTarget = user?.calorie_target || 0;
 
   const progressPercent =
-    numericGoal > 0 ? Math.min((totalCaloriesToday / numericGoal) * 100, 100) : 0;
+    calorieTarget > 0 ? Math.min((totalCaloriesToday / calorieTarget) * 100, 100) : 0;
 
   const caloriesRemaining =
-    numericGoal - totalCaloriesToday > 0 ? numericGoal - totalCaloriesToday : 0;
+    calorieTarget - totalCaloriesToday > 0 ? calorieTarget - totalCaloriesToday : 0;
+
+  const waterProgressPercent =
+    user?.water_target_l > 0 ? Math.min((water / user.water_target_l) * 100, 100) : 0;
+
+  const goalTips = {
+    cutting: "You're cutting — prioritize protein to preserve muscle while in a deficit.",
+    maintenance: "You're at maintenance — keep intake steady and consistent day to day.",
+    bulking: "You're bulking — make sure the extra calories are pulling their weight, not just carbs and fat.",
+  };
 
   const deleteMeal = async (id) => {
     try {
@@ -223,27 +221,26 @@ function App() {
                       </div>
 
                       <div style={styles.totalBox}>
-                        🔥 Today’s Total: {totalCaloriesToday} / {numericGoal || 0} kcal
-
-                        <div style={{ marginTop: "10px" }}>
-                          <input
-                            type="number"
-                            min="0"
-                            value={dailyGoal}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              if (value === "") return setDailyGoal("");
-                              if (Number(value) >= 0) setDailyGoal(value);
-                            }}
-                            style={styles.goalInput}
-                          />
-                        </div>
+                        🔥 Today’s Total: {totalCaloriesToday} / {calorieTarget} kcal
 
                         <div style={styles.progressBar}>
                           <div
                             style={{
                               ...styles.progressFill,
                               width: `${progressPercent}%`,
+                            }}
+                          />
+                        </div>
+
+                        <div style={{ marginTop: "16px" }}>
+                          💧 Water: {water}L / {user.water_target_l}L
+                        </div>
+
+                        <div style={styles.progressBar}>
+                          <div
+                            style={{
+                              ...styles.progressFill,
+                              width: `${waterProgressPercent}%`,
                             }}
                           />
                         </div>
@@ -257,9 +254,8 @@ function App() {
                         <p>
                           Protein consumed today: <strong>{totalProteinToday}g</strong>
                         </p>
+                        <p>{goalTips[user.goal] || goalTips.maintenance}</p>
                       </div>
-
-                      <GoalSelector goal={goal} setGoal={setGoal} />
 
                       <FoodInput
                         food={food}
@@ -280,7 +276,7 @@ function App() {
           />
 
           <Route path="/meals" element={<Meals meals={meals} setMeals={setMeals} />} />
-          <Route path="/analytics" element={<Analytics meals={meals} />} />
+          <Route path="/analytics" element={<Analytics meals={meals} calorieTarget={calorieTarget} />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -460,17 +456,6 @@ const getStyles = (darkMode, isMobile) => ({
     background: "rgba(0,0,0,0.35)",
     border: "1px solid rgba(255,255,255,0.1)",
     fontWeight: "bold",
-  },
-
-  goalInput: {
-    width: "95%",
-    padding: "10px",
-    marginTop: "8px",
-    borderRadius: "10px",
-    border: "1px solid rgba(255,255,255,0.2)",
-    background: "rgba(255,255,255,0.08)",
-    color: "white",
-    outline: "none",
   },
 
   progressBar: {

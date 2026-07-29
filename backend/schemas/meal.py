@@ -7,12 +7,10 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class MealCreate(BaseModel):
     food: str = Field(min_length=1, max_length=255)
-    goal: str = Field(default="maintenance", max_length=20)
 
 
 class MealUpdate(BaseModel):
     food: Optional[str] = Field(default=None, min_length=1, max_length=255)
-    goal: Optional[str] = Field(default=None, max_length=20)
 
 
 class MealPublic(BaseModel):

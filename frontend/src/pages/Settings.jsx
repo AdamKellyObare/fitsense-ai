@@ -1,40 +1,91 @@
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { ApiError } from "../lib/api";
+import { estimateTargets } from "../lib/targets";
+
+function fieldsFromUser(user) {
+  return {
+    name: user?.name || "",
+    age: user?.age ?? "",
+    height: user?.height_cm ?? "",
+    weight: user?.weight_kg ?? "",
+    sex: user?.sex || "",
+    activityLevel: user?.activity_level || "moderate",
+    goal: user?.goal || "maintenance",
+    calorieTarget: user?.calorie_target ?? "",
+    proteinTarget: user?.protein_target ?? "",
+    carbTarget: user?.carb_target ?? "",
+    fatTarget: user?.fat_target ?? "",
+    waterTarget: user?.water_target_l ?? "",
+  };
+}
 
 function Settings() {
-  const [name, setName] = useState(localStorage.getItem("fitsense_name") || "");
-  const [age, setAge] = useState(localStorage.getItem("fitsense_age") || "");
-  const [height, setHeight] = useState(localStorage.getItem("fitsense_height") || "");
-  const [weight, setWeight] = useState(localStorage.getItem("fitsense_weight") || "");
-  const [goal, setGoal] = useState(localStorage.getItem("fitsense_goal") || "maintenance");
+  const { user, updateProfile } = useAuth();
+  const [fields, setFields] = useState(() => fieldsFromUser(user));
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState(null);
 
-  const [calorieTarget, setCalorieTarget] = useState(
-    localStorage.getItem("fitsense_calorie_target") || "2000"
-  );
+  const setField = (key) => (e) => setFields((prev) => ({ ...prev, [key]: e.target.value }));
 
-  const [proteinTarget, setProteinTarget] = useState(
-    localStorage.getItem("fitsense_protein_target") || "180"
-  );
+  const autoCalculate = () => {
+    const suggestion = estimateTargets({
+      age: Number(fields.age),
+      sex: fields.sex || undefined,
+      heightCm: Number(fields.height),
+      weightKg: Number(fields.weight),
+      goal: fields.goal,
+      activityLevel: fields.activityLevel,
+    });
 
-  const [waterTarget, setWaterTarget] = useState(
-    localStorage.getItem("fitsense_water_target") || "3"
-  );
+    if (!suggestion) {
+      setStatus({ type: "error", message: "Enter your age, height, and weight first." });
+      return;
+    }
 
-  const saveSettings = () => {
-    localStorage.setItem("fitsense_name", name);
-    localStorage.setItem("fitsense_age", age);
-    localStorage.setItem("fitsense_height", height);
-    localStorage.setItem("fitsense_weight", weight);
-    localStorage.setItem("fitsense_goal", goal);
-    localStorage.setItem("fitsense_calorie_target", calorieTarget);
-    localStorage.setItem("fitsense_protein_target", proteinTarget);
-    localStorage.setItem("fitsense_water_target", waterTarget);
-
-    alert("Settings saved successfully.");
+    setFields((prev) => ({
+      ...prev,
+      calorieTarget: suggestion.calorie_target,
+      proteinTarget: suggestion.protein_target,
+      carbTarget: suggestion.carb_target,
+      fatTarget: suggestion.fat_target,
+    }));
+    setStatus({ type: "success", message: "Targets estimated — review below, then save." });
   };
 
-  const resetData = () => {
-    localStorage.clear();
-    window.location.reload();
+  const saveSettings = async () => {
+    setSaving(true);
+    setStatus(null);
+
+    try {
+      await updateProfile({
+        name: fields.name || null,
+        age: fields.age === "" ? null : Number(fields.age),
+        height_cm: fields.height === "" ? null : Number(fields.height),
+        weight_kg: fields.weight === "" ? null : Number(fields.weight),
+        sex: fields.sex || null,
+        activity_level: fields.activityLevel,
+        goal: fields.goal,
+        calorie_target: Number(fields.calorieTarget),
+        protein_target: Number(fields.proteinTarget),
+        carb_target: Number(fields.carbTarget),
+        fat_target: Number(fields.fatTarget),
+        water_target_l: Number(fields.waterTarget),
+      });
+      setStatus({ type: "success", message: "Settings saved." });
+    } catch (err) {
+      setStatus({
+        type: "error",
+        message: err instanceof ApiError ? err.message : "Failed to save settings.",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const discardChanges = () => {
+    setFields(fieldsFromUser(user));
+    setStatus(null);
   };
 
   return (
@@ -48,8 +99,14 @@ function Settings() {
 
       <div style={styles.card}>
         <div style={styles.avatar}>
-          {name ? name.charAt(0).toUpperCase() : "F"}
+          {fields.name ? fields.name.charAt(0).toUpperCase() : "F"}
         </div>
+
+        {status && (
+          <div style={status.type === "error" ? styles.errorBanner : styles.successBanner}>
+            {status.message}
+          </div>
+        )}
 
         <h3 style={styles.sectionTitle}>Profile</h3>
 
@@ -57,76 +114,110 @@ function Settings() {
           <input
             style={styles.input}
             placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={fields.name}
+            onChange={setField("name")}
           />
 
           <input
             style={styles.input}
             placeholder="Age"
-            value={age}
-            onChange={(e) => setAge(e.target.value)}
+            value={fields.age}
+            onChange={setField("age")}
           />
 
           <input
             style={styles.input}
             placeholder="Height (cm)"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
+            value={fields.height}
+            onChange={setField("height")}
           />
 
           <input
             style={styles.input}
             placeholder="Weight (kg)"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
+            value={fields.weight}
+            onChange={setField("weight")}
           />
+
+          <select style={styles.input} value={fields.sex} onChange={setField("sex")}>
+            <option value="">Sex (used only to estimate targets)</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
         </div>
 
         <h3 style={styles.sectionTitle}>Fitness Goal</h3>
 
-        <select
-          style={styles.input}
-          value={goal}
-          onChange={(e) => setGoal(e.target.value)}
-        >
-          <option value="cutting">Cutting</option>
-          <option value="maintenance">Maintenance</option>
-          <option value="bulking">Bulking</option>
-        </select>
+        <div style={styles.grid}>
+          <select style={styles.input} value={fields.goal} onChange={setField("goal")}>
+            <option value="cutting">Cutting</option>
+            <option value="maintenance">Maintenance</option>
+            <option value="bulking">Bulking</option>
+          </select>
+
+          <select
+            style={styles.input}
+            value={fields.activityLevel}
+            onChange={setField("activityLevel")}
+          >
+            <option value="sedentary">Sedentary (little/no exercise)</option>
+            <option value="light">Light (1-3 days/week)</option>
+            <option value="moderate">Moderate (3-5 days/week)</option>
+            <option value="active">Active (6-7 days/week)</option>
+            <option value="very_active">Very active (physical job/training)</option>
+          </select>
+        </div>
 
         <h3 style={styles.sectionTitle}>Targets</h3>
+
+        <button style={styles.autoCalcBtn} onClick={autoCalculate} type="button">
+          ✨ Auto-calculate from profile
+        </button>
 
         <div style={styles.grid}>
           <input
             style={styles.input}
             placeholder="Daily Calories"
-            value={calorieTarget}
-            onChange={(e) => setCalorieTarget(e.target.value)}
+            value={fields.calorieTarget}
+            onChange={setField("calorieTarget")}
           />
 
           <input
             style={styles.input}
             placeholder="Protein Goal (g)"
-            value={proteinTarget}
-            onChange={(e) => setProteinTarget(e.target.value)}
+            value={fields.proteinTarget}
+            onChange={setField("proteinTarget")}
+          />
+
+          <input
+            style={styles.input}
+            placeholder="Carb Goal (g)"
+            value={fields.carbTarget}
+            onChange={setField("carbTarget")}
+          />
+
+          <input
+            style={styles.input}
+            placeholder="Fat Goal (g)"
+            value={fields.fatTarget}
+            onChange={setField("fatTarget")}
           />
 
           <input
             style={styles.input}
             placeholder="Water Goal (L)"
-            value={waterTarget}
-            onChange={(e) => setWaterTarget(e.target.value)}
+            value={fields.waterTarget}
+            onChange={setField("waterTarget")}
           />
         </div>
 
         <div style={styles.actions}>
-          <button style={styles.saveBtn} onClick={saveSettings}>
-            Save Settings
+          <button style={styles.saveBtn} onClick={saveSettings} disabled={saving}>
+            {saving ? "Saving..." : "Save Settings"}
           </button>
 
-          <button style={styles.resetBtn} onClick={resetData}>
-            Reset All Data
+          <button style={styles.resetBtn} onClick={discardChanges}>
+            Discard Changes
           </button>
         </div>
       </div>
@@ -205,6 +296,33 @@ input: {
   boxSizing: "border-box",
 },
 
+  autoCalcBtn: {
+    padding: "12px 18px",
+    marginBottom: "14px",
+    borderRadius: "12px",
+    border: "1px solid rgba(52,211,153,0.4)",
+    background: "rgba(52,211,153,0.12)",
+    color: "#34d399",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+
+  errorBanner: {
+    marginBottom: "20px",
+    padding: "14px",
+    borderRadius: "12px",
+    background: "rgba(239,68,68,0.12)",
+    color: "#ef4444",
+  },
+
+  successBanner: {
+    marginBottom: "20px",
+    padding: "14px",
+    borderRadius: "12px",
+    background: "rgba(34,197,94,0.12)",
+    color: "#22c55e",
+  },
+
   actions: {
     display: "flex",
     gap: "14px",
@@ -227,7 +345,7 @@ input: {
     borderRadius: "12px",
     border: "none",
     cursor: "pointer",
-    background: "#ef4444",
+    background: "#334155",
     color: "white",
     fontWeight: "bold",
   },

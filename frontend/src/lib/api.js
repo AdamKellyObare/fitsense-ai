@@ -46,12 +46,13 @@ export const authApi = {
     apiFetch("/auth/login", { method: "POST", body: { email, password } }),
   logout: () => apiFetch("/auth/logout", { method: "POST" }),
   me: () => apiFetch("/auth/me"),
+  updateMe: (payload) => apiFetch("/auth/me", { method: "PATCH", body: payload }),
 };
 
 export const mealsApi = {
   list: () => apiFetch("/meals"),
-  create: (food, goal) => apiFetch("/meals", { method: "POST", body: { food, goal } }),
-  update: (id, { food, goal }) => apiFetch(`/meals/${id}`, { method: "PATCH", body: { food, goal } }),
+  create: (food) => apiFetch("/meals", { method: "POST", body: { food } }),
+  update: (id, { food }) => apiFetch(`/meals/${id}`, { method: "PATCH", body: { food } }),
   remove: (id) => apiFetch(`/meals/${id}`, { method: "DELETE" }),
 };
 

@@ -21,7 +21,7 @@ from core.security import (
 from db.session import get_db
 from models.refresh_token import RefreshToken
 from models.user import User
-from schemas.user import UserCreate, UserLogin, UserPublic
+from schemas.user import UserCreate, UserLogin, UserPublic, UserUpdate
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -131,4 +131,19 @@ async def logout(
 
 @router.get("/me", response_model=UserPublic)
 async def me(current_user: User = Depends(get_current_user)) -> User:
+    return current_user
+
+
+@router.patch("/me", response_model=UserPublic)
+async def update_me(
+    payload: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    _: None = Depends(require_csrf),
+) -> User:
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(current_user, field, value)
+
+    await db.commit()
+    await db.refresh(current_user)
     return current_user

@@ -37,7 +37,7 @@ async def log_meal(
     meal = Meal(
         user_id=current_user.id,
         food=payload.food,
-        goal=payload.goal,
+        goal=current_user.goal,
         calories=estimate["calories"],
         protein=estimate["protein"],
         carbs=estimate["carbs"],
@@ -71,11 +71,9 @@ async def update_meal(
 ) -> Meal:
     meal = await _get_owned_meal(meal_id, db, current_user)
 
-    if payload.goal is not None:
-        meal.goal = payload.goal
-
     if payload.food is not None and payload.food != meal.food:
         meal.food = payload.food
+        meal.goal = current_user.goal
         estimate = estimate_calories(payload.food)
         meal.calories = estimate["calories"]
         meal.protein = estimate["protein"]
