@@ -23,8 +23,8 @@ app.add_middleware(
     # A wildcard here is not honored for credentialed requests per the
     # Fetch/CORS spec — Authorization must be listed explicitly or the
     # preflight for Bearer-authenticated requests will reject it.
-    allow_headers=["Content-Type", "Authorization", "X-CSRF-Token"],
-    expose_headers=["X-CSRF-Token", "X-Access-Token"],
+    allow_headers=["Content-Type", "Authorization", "X-CSRF-Token", "X-Refresh-Token"],
+    expose_headers=["X-CSRF-Token", "X-Access-Token", "X-Refresh-Token"],
 )
 
 app.include_router(auth_router)

@@ -37,15 +37,47 @@ let csrfTokenMemory = null;
 // the CSRF token above.
 let accessTokenMemory = null;
 
+// Confirmed by live-device testing: the refresh_token cookie has the exact
+// same ITP-related persistence problem as the access_token cookie did — an
+// idle session's silent-refresh attempt came back 401 because the cookie
+// itself wasn't present on the request. Same fix: hold it in memory only
+// (never persisted, per the same rule as the access token) and send it
+// explicitly to /auth/refresh instead of relying on the cookie.
+//
+// This does NOT survive a real force-quit-and-relaunch — a fresh process
+// has empty memory, so there's currently no way to silently restore a
+// session across an actual app restart. That's a known, deliberately
+// deferred gap (would need native secure storage — Keychain/Keystore — to
+// solve properly) tracked as a pre-launch item, not fixed here.
+let refreshTokenMemory = null;
+
 export function clearInMemoryAuth() {
   csrfTokenMemory = null;
   accessTokenMemory = null;
+  refreshTokenMemory = null;
+}
+
+// Registered by AuthContext so api.js (a plain module, no React access) can
+// signal "the session is definitively over" — refresh itself failed, not
+// just the original request — and let the app react globally (clear user
+// state, show a real login screen with a clear message) instead of a raw
+// error surfacing wherever the failing request happened to be called from.
+let sessionExpiredHandler = null;
+
+export function setSessionExpiredHandler(handler) {
+  sessionExpiredHandler = handler;
 }
 
 async function rawFetch(path, { method = "GET", body } = {}) {
   const headers = { "Content-Type": "application/json" };
 
   if (accessTokenMemory) headers["Authorization"] = `Bearer ${accessTokenMemory}`;
+
+  // Only sent to the one endpoint that actually needs it — no reason to
+  // put a 30-day credential on the wire for every ordinary request.
+  if (path === "/auth/refresh" && refreshTokenMemory) {
+    headers["X-Refresh-Token"] = refreshTokenMemory;
+  }
 
   if (method !== "GET" && method !== "HEAD") {
     const csrfToken = csrfTokenMemory || getCookie("csrf_token");
@@ -65,6 +97,9 @@ async function rawFetch(path, { method = "GET", body } = {}) {
   const headerAccessToken = res.headers.get("x-access-token");
   if (headerAccessToken) accessTokenMemory = headerAccessToken;
 
+  const headerRefreshToken = res.headers.get("x-refresh-token");
+  if (headerRefreshToken) refreshTokenMemory = headerRefreshToken;
+
   if (res.status === 204) return { ok: true, status: 204, data: null };
 
   const data = await res.json().catch(() => null);
@@ -73,8 +108,8 @@ async function rawFetch(path, { method = "GET", body } = {}) {
 
 // The access token is short-lived (15 min) by design. Without this, any
 // request made after it expires fails outright instead of silently
-// refreshing via the refresh-token cookie, even though /auth/refresh exists
-// and works fine — nothing was ever calling it.
+// refreshing via the refresh token, even though /auth/refresh exists and
+// works fine — nothing was ever calling it.
 let refreshInFlight = null;
 
 function refreshSession() {
@@ -93,6 +128,12 @@ async function apiFetch(path, options = {}) {
     const refreshResult = await refreshSession();
     if (refreshResult.ok) {
       result = await rawFetch(path, options);
+    } else {
+      // Refresh itself failed — the session is genuinely over, not just
+      // this one request. Let the app react globally instead of leaving a
+      // raw "Not authenticated" wherever this call happened to be made.
+      clearInMemoryAuth();
+      if (sessionExpiredHandler) sessionExpiredHandler();
     }
   }
 

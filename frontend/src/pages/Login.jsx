@@ -28,7 +28,7 @@ function Login() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const { login } = useAuth();
+  const { login, sessionMessage } = useAuth();
   const navigate = useNavigate();
 
   const styles = getAuthStyles(isMobile);
@@ -89,6 +89,8 @@ function Login() {
             animate="visible"
             custom={4}
           >
+            {sessionMessage && <div style={styles.errorBox}>{sessionMessage}</div>}
+
             <label style={styles.loginLabel}>Email</label>
             <input
               type="email"

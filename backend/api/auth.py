@@ -91,7 +91,9 @@ async def refresh(
     db: AsyncSession = Depends(get_db),
     _: None = Depends(require_csrf),
 ) -> User:
-    raw_token = request.cookies.get(REFRESH_COOKIE)
+    # Header first (native app, holds it in memory — see core/security.py),
+    # falling back to the cookie (web app, unaffected by any of this).
+    raw_token = request.headers.get("x-refresh-token") or request.cookies.get(REFRESH_COOKIE)
     if not raw_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
 

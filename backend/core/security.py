@@ -148,6 +148,15 @@ def set_auth_cookies(
     # send it as `Authorization: Bearer` instead of depending on the cookie.
     response.headers["X-Access-Token"] = access_token
 
+    # Confirmed by live-device testing (not just theory): the refresh_token
+    # cookie has the exact same ITP-related persistence problem, one layer
+    # deeper — an idle session's silent-refresh attempt came back "Not
+    # authenticated" because the cookie itself wasn't present on the
+    # request. Same fix, same reasoning: expose it so the native client can
+    # hold it in memory and send it explicitly instead of relying on the
+    # cookie.
+    response.headers["X-Refresh-Token"] = refresh_token
+
 
 def clear_auth_cookies(request: Request, response: Response) -> None:
     secure, samesite = _cookie_policy(request)
