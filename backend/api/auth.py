@@ -7,6 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.deps import get_current_user, require_csrf
 from core.limiter import limiter
 from core.security import (
+    ACCESS_COOKIE,
+    CSRF_COOKIE,
+    CSRF_HEADER,
     REFRESH_COOKIE,
     clear_auth_cookies,
     create_access_token,
@@ -40,7 +43,7 @@ async def _issue_session(response: Response, db: AsyncSession, user: User, reque
     )
     await db.commit()
 
-    set_auth_cookies(response, access_token, raw_refresh, generate_csrf_token())
+    set_auth_cookies(request, response, access_token, raw_refresh, generate_csrf_token())
 
 
 @router.post("/register", response_model=UserPublic, status_code=status.HTTP_201_CREATED)
@@ -96,7 +99,7 @@ async def refresh(
     stored = await db.scalar(select(RefreshToken).where(RefreshToken.token_hash == token_hash))
 
     if stored is None or stored.revoked_at is not None or stored.expires_at < datetime.now(timezone.utc):
-        clear_auth_cookies(response)
+        clear_auth_cookies(request, response)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session expired")
 
     stored.revoked_at = datetime.now(timezone.utc)
@@ -104,7 +107,7 @@ async def refresh(
     user = await db.get(User, stored.user_id)
     if user is None:
         await db.commit()
-        clear_auth_cookies(response)
+        clear_auth_cookies(request, response)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
 
     await _issue_session(response, db, user, request)
@@ -126,11 +129,27 @@ async def logout(
             stored.revoked_at = datetime.now(timezone.utc)
             await db.commit()
 
-    clear_auth_cookies(response)
+    clear_auth_cookies(request, response)
 
 
 @router.get("/me", response_model=UserPublic)
-async def me(current_user: User = Depends(get_current_user)) -> User:
+async def me(request: Request, response: Response, current_user: User = Depends(get_current_user)) -> User:
+    # Lets a freshly-loaded app recover the CSRF token and access token into
+    # memory even though it can't read the cookies directly (see
+    # core/security.py). Best-effort: if the access_token cookie itself
+    # didn't survive (the same WKWebView/ITP issue that motivated Bearer
+    # auth in the first place), there's nothing here to recover from — that
+    # requires a real logged-in session to already exist via some other
+    # means (e.g. the Bearer header this same request may have arrived with,
+    # which is how get_current_user authenticated it in that case).
+    csrf_token = request.cookies.get(CSRF_COOKIE)
+    if csrf_token:
+        response.headers[CSRF_HEADER] = csrf_token
+
+    access_token = request.cookies.get(ACCESS_COOKIE)
+    if access_token:
+        response.headers["X-Access-Token"] = access_token
+
     return current_user
 
 

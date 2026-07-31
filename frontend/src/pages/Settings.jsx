@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { AlertCircle, Check, Sparkles } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+import { AlertCircle, Camera as CameraIcon, Check, Sparkles } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { ApiError } from "../lib/api";
 import { estimateTargets } from "../lib/targets";
@@ -87,6 +89,23 @@ function Settings() {
   const discardChanges = () => {
     setFields(fieldsFromUser(user));
     setStatus(null);
+  };
+
+  const [cameraTestPhoto, setCameraTestPhoto] = useState(null);
+  const [cameraTestError, setCameraTestError] = useState(null);
+
+  const testCameraAccess = async () => {
+    setCameraTestError(null);
+    try {
+      const photo = await Camera.getPhoto({
+        resultType: CameraResultType.Uri,
+        source: CameraSource.Prompt,
+        quality: 70,
+      });
+      setCameraTestPhoto(photo.webPath);
+    } catch (err) {
+      setCameraTestError(err?.message || "Camera access was denied or cancelled.");
+    }
   };
 
   return (
@@ -226,6 +245,31 @@ function Settings() {
             Discard Changes
           </button>
         </div>
+
+        {Capacitor.isNativePlatform() && (
+          <div style={styles.devSection}>
+            <h3 style={styles.devSectionTitle}>Dev: Camera Permission Check</h3>
+            <p style={styles.devSectionNote}>
+              Temporary — confirms the camera/photo-library permission prompts fire
+              correctly on-device. Remove once the real meal-scanning feature ships.
+            </p>
+
+            <button style={styles.devBtn} onClick={testCameraAccess} type="button">
+              <CameraIcon size={16} strokeWidth={2.5} /> Test Camera Access
+            </button>
+
+            {cameraTestError && (
+              <div style={styles.errorBanner}>
+                <AlertCircle size={17} strokeWidth={2.5} />
+                {cameraTestError}
+              </div>
+            )}
+
+            {cameraTestPhoto && (
+              <img src={cameraTestPhoto} alt="Camera test capture" style={styles.devPhotoPreview} />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -301,7 +345,9 @@ input: {
   color: "var(--ink)",
   outline: "none",
   fontFamily: "var(--font-body)",
-  fontSize: "14px",
+  // >=16px: iOS auto-zooms the page on focus below that, regardless of
+  // user-scalable=no (unreliable for this specific behavior on WebKit).
+  fontSize: "16px",
   boxSizing: "border-box",
 },
 
@@ -372,6 +418,49 @@ input: {
     color: "var(--ink)",
     fontWeight: "600",
     fontSize: "14px",
+  },
+
+  devSection: {
+    marginTop: "28px",
+    paddingTop: "24px",
+    borderTop: "1px dashed var(--line)",
+  },
+
+  devSectionTitle: {
+    margin: "0 0 6px",
+    fontSize: "15px",
+    fontFamily: "var(--font-mono)",
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+    color: "var(--graphite)",
+  },
+
+  devSectionNote: {
+    margin: "0 0 14px",
+    fontSize: "13px",
+    color: "var(--graphite)",
+  },
+
+  devBtn: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    padding: "12px 18px",
+    borderRadius: "var(--radius-full)",
+    border: "1px dashed var(--line)",
+    background: "transparent",
+    color: "var(--ink)",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "14px",
+  },
+
+  devPhotoPreview: {
+    display: "block",
+    marginTop: "14px",
+    maxWidth: "220px",
+    borderRadius: "var(--radius-md)",
+    border: "1px solid var(--line)",
   },
 };
 

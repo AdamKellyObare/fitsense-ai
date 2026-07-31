@@ -20,7 +20,11 @@ const styles = {
   input: {
     width: "100%",
     padding: "13px 14px",
-    fontSize: "15px",
+    // Kept at >=16px deliberately: iOS auto-zooms the whole page on focus
+    // for any text input below that size, and user-scalable=no in
+    // index.html isn't reliably honored for that specific behavior on all
+    // WebKit versions — the only fully robust fix is the font-size itself.
+    fontSize: "16px",
     marginBottom: "15px",
     borderRadius: "var(--radius-md)",
     border: "1px solid var(--line)",

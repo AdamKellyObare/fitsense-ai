@@ -67,6 +67,19 @@ function App() {
     localStorage.setItem("fitsense_water", water);
   }, [water]);
 
+  // Reset the meal-analysis panel whenever the session itself changes
+  // (login, logout, or switching accounts) — otherwise the last result from
+  // a previous session lingers indefinitely, since this state lives on the
+  // top-level App component, which never unmounts across auth transitions.
+  // Keyed on the id specifically, not the whole user object: profile edits
+  // (Settings) also call setUser with a new object for the same account,
+  // and that shouldn't wipe an unrelated in-progress meal result.
+  useEffect(() => {
+    setResult("");
+    setError("");
+    setFood("");
+  }, [user?.id]);
+
   const estimateCalories = async () => {
     if (!food) return;
 
@@ -184,55 +197,6 @@ function App() {
               <div style={styles.contentArea}>
                 <div style={styles.dashboardWrapper}>
                   <div style={{ ...styles.dashboard, ...styles.mobileStack }}>
-                    <div style={styles.leftPanel}>
-                      <WeeklySummary meals={meals} />
-
-                      <div style={styles.ringSection}>
-                        <h3 style={styles.ringSectionTitle}>Today's Progress</h3>
-
-                        <div style={styles.ringRow}>
-                          <ProgressRing
-                            value={totalCaloriesToday}
-                            max={calorieTarget}
-                            unit="kcal"
-                            caption={`of ${calorieTarget} kcal goal`}
-                          />
-
-                          <div style={styles.macroBars}>
-                            <div style={styles.macroBarRow}>
-                              <div style={styles.macroBarLabel}>
-                                <Beef size={14} strokeWidth={2.4} /> Protein
-                              </div>
-                              <div style={styles.progressBar}>
-                                <div style={{ ...styles.progressFill, width: `${proteinPercent}%` }} />
-                              </div>
-                              <span style={styles.macroBarValue}>{totalProteinToday}/{proteinTarget}g</span>
-                            </div>
-
-                            <div style={styles.macroBarRow}>
-                              <div style={styles.macroBarLabel}>
-                                <Wheat size={14} strokeWidth={2.4} /> Carbs
-                              </div>
-                              <div style={styles.progressBar}>
-                                <div style={{ ...styles.progressFill, width: `${carbPercent}%` }} />
-                              </div>
-                              <span style={styles.macroBarValue}>{totalCarbsToday}/{carbTarget}g</span>
-                            </div>
-
-                            <div style={styles.macroBarRow}>
-                              <div style={styles.macroBarLabel}>
-                                <Droplets size={14} strokeWidth={2.4} /> Fat
-                              </div>
-                              <div style={styles.progressBar}>
-                                <div style={{ ...styles.progressFill, width: `${fatPercent}%` }} />
-                              </div>
-                              <span style={styles.macroBarValue}>{totalFatToday}/{fatTarget}g</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
                     <div style={styles.container}>
                       <h1 style={styles.title}>FitSense AI</h1>
 
@@ -243,6 +207,16 @@ function App() {
                       <p style={styles.subtitle}>
                         Smart calorie insights based on your fitness goal
                       </p>
+
+                      <FoodInput
+                        food={food}
+                        setFood={setFood}
+                        onSubmit={estimateCalories}
+                        loading={loading}
+                      />
+
+                      {result && <div style={styles.result}>{result}</div>}
+                      {error && <div style={styles.error}>{error}</div>}
 
                       <MotionDiv
                         style={styles.statsRow}
@@ -319,16 +293,6 @@ function App() {
                         <p>{goalTips[user.goal] || goalTips.maintenance}</p>
                       </div>
 
-                      <FoodInput
-                        food={food}
-                        setFood={setFood}
-                        onSubmit={estimateCalories}
-                        loading={loading}
-                      />
-
-                      {result && <div style={styles.result}>{result}</div>}
-                      {error && <div style={styles.error}>{error}</div>}
-
                       <MotionDiv
                         initial="hidden"
                         whileInView="visible"
@@ -338,6 +302,55 @@ function App() {
                         <MealHistory meals={meals} onDelete={deleteMeal} />
                       </MotionDiv>
                     </div>
+
+                    <div style={styles.leftPanel}>
+                      <h3 style={styles.ringSectionTitle}>Today's Progress</h3>
+
+                      <div style={styles.ringRow}>
+                        <ProgressRing
+                          value={totalCaloriesToday}
+                          max={calorieTarget}
+                          unit="kcal"
+                          caption={`of ${calorieTarget} kcal goal`}
+                        />
+
+                        <div style={styles.macroBars}>
+                          <div style={styles.macroBarRow}>
+                            <div style={styles.macroBarLabel}>
+                              <Beef size={14} strokeWidth={2.4} /> Protein
+                            </div>
+                            <div style={styles.progressBar}>
+                              <div style={{ ...styles.progressFill, width: `${proteinPercent}%` }} />
+                            </div>
+                            <span style={styles.macroBarValue}>{totalProteinToday}/{proteinTarget}g</span>
+                          </div>
+
+                          <div style={styles.macroBarRow}>
+                            <div style={styles.macroBarLabel}>
+                              <Wheat size={14} strokeWidth={2.4} /> Carbs
+                            </div>
+                            <div style={styles.progressBar}>
+                              <div style={{ ...styles.progressFill, width: `${carbPercent}%` }} />
+                            </div>
+                            <span style={styles.macroBarValue}>{totalCarbsToday}/{carbTarget}g</span>
+                          </div>
+
+                          <div style={styles.macroBarRow}>
+                            <div style={styles.macroBarLabel}>
+                              <Droplets size={14} strokeWidth={2.4} /> Fat
+                            </div>
+                            <div style={styles.progressBar}>
+                              <div style={{ ...styles.progressFill, width: `${fatPercent}%` }} />
+                            </div>
+                            <span style={styles.macroBarValue}>{totalFatToday}/{fatTarget}g</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={styles.chartPanel}>
+                    <WeeklySummary meals={meals} calorieTarget={calorieTarget} />
                   </div>
                 </div>
               </div>
@@ -372,10 +385,9 @@ const getStyles = (isMobile, isDesktop) => ({
     display: "flex",
     flexDirection: isDesktop ? "row" : "column",
     width: "100vw",
-    minHeight: "100vh",
+    minHeight: "100dvh",
     background: "var(--paper)",
     color: "var(--ink)",
-    overflow: "hidden",
   },
 
   sidebarWrapper: {
@@ -410,6 +422,9 @@ const getStyles = (isMobile, isDesktop) => ({
     width: "93%",
     maxWidth: "1200px",
     margin: "0 auto",
+    display: "flex",
+    flexDirection: "column",
+    gap: "24px",
   },
 
   dashboard: {
@@ -434,10 +449,13 @@ const getStyles = (isMobile, isDesktop) => ({
     minWidth: 0,
   },
 
-  ringSection: {
-    marginTop: "28px",
-    paddingTop: "24px",
-    borderTop: "1px solid var(--line)",
+  chartPanel: {
+    padding: "25px",
+    borderRadius: "var(--radius-lg)",
+    background: "var(--paper-raised)",
+    border: "1px solid var(--line)",
+    boxShadow: "var(--shadow)",
+    minWidth: 0,
   },
 
   ringSectionTitle: {

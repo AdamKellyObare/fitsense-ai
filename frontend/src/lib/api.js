@@ -13,11 +13,42 @@ class ApiError extends Error {
   }
 }
 
-async function apiFetch(path, { method = "GET", body } = {}) {
+// Paths that must never trigger a refresh-and-retry themselves — retrying
+// them on a 401 either makes no sense (refresh failing) or risks a loop.
+const NO_RETRY_PATHS = ["/auth/login", "/auth/register", "/auth/refresh"];
+
+// Cookies are host-scoped: a native app shell's own origin (always
+// "capacitor://localhost" on iOS, whatever hostname is configured on
+// Android) is never the same host as the API, so document.cookie can never
+// see the CSRF cookie at all — that's not a SameSite/Secure problem, it's
+// just how cookies work. The API also echoes the current token back as a
+// response header (which a same-origin-to-itself fetch call CAN read), so
+// that's the real source of truth; the cookie read is only a same-site
+// (web app) convenience fallback.
+let csrfTokenMemory = null;
+
+// WKWebView's Intelligent Tracking Prevention was observed dropping even
+// httpOnly cookies set via a cross-origin JS-initiated request, so the
+// access_token cookie can silently fail to persist even within one app
+// session. Held in memory only — never written to localStorage/Preferences/
+// any persistent store — and sent as `Authorization: Bearer` instead of
+// relying on the cookie. The API echoes a fresh value back on every
+// response that issues a session (login/register/refresh), same pattern as
+// the CSRF token above.
+let accessTokenMemory = null;
+
+export function clearInMemoryAuth() {
+  csrfTokenMemory = null;
+  accessTokenMemory = null;
+}
+
+async function rawFetch(path, { method = "GET", body } = {}) {
   const headers = { "Content-Type": "application/json" };
 
+  if (accessTokenMemory) headers["Authorization"] = `Bearer ${accessTokenMemory}`;
+
   if (method !== "GET" && method !== "HEAD") {
-    const csrfToken = getCookie("csrf_token");
+    const csrfToken = csrfTokenMemory || getCookie("csrf_token");
     if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
   }
 
@@ -28,15 +59,48 @@ async function apiFetch(path, { method = "GET", body } = {}) {
     body: body ? JSON.stringify(body) : undefined,
   });
 
-  if (res.status === 204) return null;
+  const headerToken = res.headers.get("x-csrf-token");
+  if (headerToken) csrfTokenMemory = headerToken;
+
+  const headerAccessToken = res.headers.get("x-access-token");
+  if (headerAccessToken) accessTokenMemory = headerAccessToken;
+
+  if (res.status === 204) return { ok: true, status: 204, data: null };
 
   const data = await res.json().catch(() => null);
+  return { ok: res.ok, status: res.status, data };
+}
 
-  if (!res.ok) {
-    throw new ApiError(res.status, data?.detail);
+// The access token is short-lived (15 min) by design. Without this, any
+// request made after it expires fails outright instead of silently
+// refreshing via the refresh-token cookie, even though /auth/refresh exists
+// and works fine — nothing was ever calling it.
+let refreshInFlight = null;
+
+function refreshSession() {
+  if (!refreshInFlight) {
+    refreshInFlight = rawFetch("/auth/refresh", { method: "POST" }).finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
+}
+
+async function apiFetch(path, options = {}) {
+  let result = await rawFetch(path, options);
+
+  if (!result.ok && result.status === 401 && !NO_RETRY_PATHS.includes(path)) {
+    const refreshResult = await refreshSession();
+    if (refreshResult.ok) {
+      result = await rawFetch(path, options);
+    }
   }
 
-  return data;
+  if (!result.ok) {
+    throw new ApiError(result.status, result.data?.detail);
+  }
+
+  return result.data;
 }
 
 export const authApi = {

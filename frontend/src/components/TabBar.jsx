@@ -42,7 +42,7 @@ const styles = {
     display: "flex",
     background: "var(--paper-raised)",
     borderTop: "1px solid var(--line)",
-    padding: "10px 8px calc(10px + env(safe-area-inset-bottom))",
+    padding: "10px 8px max(16px, env(safe-area-inset-bottom))",
     zIndex: 40,
   },
 

@@ -8,8 +8,18 @@ from db.session import get_db
 from models.user import User
 
 
+def _bearer_token(request: Request) -> str | None:
+    auth_header = request.headers.get("authorization", "")
+    if auth_header.lower().startswith("bearer "):
+        return auth_header[7:].strip() or None
+    return None
+
+
 async def get_current_user(request: Request, db: AsyncSession = Depends(get_db)) -> User:
-    token = request.cookies.get(ACCESS_COOKIE)
+    # The native app shell can't rely on cookies for the access token (see
+    # core/security.py) and sends it as a Bearer header instead; the web app
+    # never sends that header, so it keeps working via cookie unchanged.
+    token = _bearer_token(request) or request.cookies.get(ACCESS_COOKIE)
     user_id = decode_access_token(token) if token else None
     if user_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
@@ -22,6 +32,14 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_db))
 
 
 async def require_csrf(request: Request) -> None:
+    # A Bearer-authenticated request can't be forged by a third-party site
+    # the way an ambient cookie can (the attacker has no way to read or
+    # attach the token), so double-submit CSRF protects nothing extra here.
+    # If the token itself is invalid, get_current_user rejects it with 401
+    # regardless of this check, so skipping it can't open a hole.
+    if _bearer_token(request):
+        return
+
     cookie_value = request.cookies.get(CSRF_COOKIE)
     header_value = request.headers.get(CSRF_HEADER)
     if not csrf_matches(cookie_value, header_value):

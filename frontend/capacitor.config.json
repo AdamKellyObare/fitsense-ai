@@ -1,0 +1,15 @@
+{
+  "appId": "com.fitsense.app",
+  "appName": "FitSense AI",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false,
+      "backgroundColor": "#13110d",
+      "androidScaleType": "CENTER_CROP"
+    }
+  }
+}

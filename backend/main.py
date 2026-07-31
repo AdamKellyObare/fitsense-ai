@@ -17,10 +17,14 @@ app.add_middleware(SlowAPIMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.FRONTEND_ORIGIN],
+    allow_origins=settings.frontend_origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    # A wildcard here is not honored for credentialed requests per the
+    # Fetch/CORS spec — Authorization must be listed explicitly or the
+    # preflight for Bearer-authenticated requests will reject it.
+    allow_headers=["Content-Type", "Authorization", "X-CSRF-Token"],
+    expose_headers=["X-CSRF-Token", "X-Access-Token"],
 )
 
 app.include_router(auth_router)

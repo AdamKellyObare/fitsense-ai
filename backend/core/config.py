@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     USE_REAL_AI: bool = False
 
+    @property
+    def frontend_origins(self) -> list[str]:
+        return [origin.strip() for origin in self.FRONTEND_ORIGIN.split(",") if origin.strip()]
+
 
 @lru_cache
 def get_settings() -> Settings:

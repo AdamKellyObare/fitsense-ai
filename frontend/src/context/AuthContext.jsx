@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { authApi } from "../lib/api";
+import { authApi, clearInMemoryAuth } from "../lib/api";
 
 const AuthContext = createContext(null);
 
@@ -32,6 +32,7 @@ export function AuthProvider({ children }) {
       await authApi.logout();
     } finally {
       setUser(null);
+      clearInMemoryAuth();
     }
   }, []);
 

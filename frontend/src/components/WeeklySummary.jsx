@@ -1,10 +1,11 @@
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   Tooltip,
   CartesianGrid,
+  ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
 
@@ -19,7 +20,7 @@ function ChartTooltip({ active, payload, label }) {
   );
 }
 
-function WeeklySummary({ meals }) {
+function WeeklySummary({ meals, calorieTarget }) {
   // get last 7 days
   const days = [...Array(7)].map((_, i) => {
     const d = new Date();
@@ -44,8 +45,8 @@ function WeeklySummary({ meals }) {
       <h3 style={{ marginBottom: "10px", fontSize: "18px" }}>Weekly Calories</h3>
 
       <ResponsiveContainer width="100%" height={260}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
+        <BarChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" vertical={false} />
 
           <XAxis
             dataKey="day"
@@ -62,20 +63,26 @@ function WeeklySummary({ meals }) {
             tickLine={false}
           />
 
-          <Tooltip content={<ChartTooltip />} cursor={{ stroke: "var(--line)" }} />
+          <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(var(--oxblood-rgb), 0.08)" }} />
 
-          <Line
-            type="monotone"
+          {calorieTarget > 0 && (
+            <ReferenceLine
+              y={calorieTarget}
+              stroke="var(--graphite)"
+              strokeDasharray="4 4"
+              strokeWidth={1.5}
+            />
+          )}
+
+          <Bar
             dataKey="calories"
-            stroke="var(--oxblood)"
-            strokeWidth={2.5}
-            dot={{ r: 4, fill: "var(--oxblood)", strokeWidth: 0 }}
-            activeDot={{ r: 6, fill: "var(--oxblood)", strokeWidth: 0 }}
+            fill="var(--oxblood)"
+            radius={[4, 4, 0, 0]}
             isAnimationActive={true}
-            animationDuration={900}
+            animationDuration={700}
             animationEasing="ease-out"
           />
-        </LineChart>
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );

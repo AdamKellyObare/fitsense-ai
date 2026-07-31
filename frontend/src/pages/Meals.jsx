@@ -236,7 +236,9 @@ page: {
     outline: "none",
     minWidth: "180px",
     fontFamily: "var(--font-body)",
-    fontSize: "14px",
+    // >=16px: iOS auto-zooms the page on focus below that, regardless of
+    // user-scalable=no (unreliable for this specific behavior on WebKit).
+    fontSize: "16px",
   },
 
   clearButton: {

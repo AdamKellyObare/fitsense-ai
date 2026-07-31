@@ -4,7 +4,13 @@ function TopBar({ userEmail, onLogout }) {
   const { isMobile } = useViewport();
 
   return (
-    <div style={{ ...styles.topbar, padding: isMobile ? "0 16px" : "0 40px" }}>
+    <div
+      style={{
+        ...styles.topbar,
+        paddingLeft: isMobile ? "16px" : "40px",
+        paddingRight: isMobile ? "16px" : "40px",
+      }}
+    >
       <div style={styles.brand}>
         <div style={styles.logo}>F</div>
         <div style={styles.brandText}>
@@ -32,7 +38,8 @@ function TopBar({ userEmail, onLogout }) {
 const styles = {
   topbar: {
     width: "100%",
-    height: "72px",
+    minHeight: "72px",
+    paddingTop: "max(16px, env(safe-area-inset-top))",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",

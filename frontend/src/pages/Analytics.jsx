@@ -91,7 +91,7 @@ function Analytics({ meals, calorieTarget }) {
       </MotionDiv>
 
       <div style={styles.chartCard}>
-        <WeeklySummary meals={meals} />
+        <WeeklySummary meals={meals} calorieTarget={calorieTarget} />
       </div>
 
       <MotionDiv style={styles.insightGrid} variants={fadeRiseGroup} initial="hidden" animate="visible">

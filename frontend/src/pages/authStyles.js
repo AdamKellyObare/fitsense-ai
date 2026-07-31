@@ -24,10 +24,10 @@ export const getAuthStyles = (isMobile) => ({
   },
 
   loginNav: {
-    height: "68px",
+    minHeight: "68px",
     maxWidth: "1250px",
     margin: "0 auto",
-    padding: "18px 32px",
+    padding: "calc(18px + env(safe-area-inset-top)) 32px 18px",
     display: "flex",
     alignItems: "center",
     boxSizing: "border-box",
@@ -59,7 +59,7 @@ export const getAuthStyles = (isMobile) => ({
     maxWidth: "1250px",
     height: isMobile ? "auto" : "calc(100vh - 68px)",
     margin: "0 auto",
-    padding: isMobile ? "20px 24px 40px" : "6px 32px 20px",
+    padding: isMobile ? "20px 24px calc(40px + env(safe-area-inset-bottom))" : "6px 32px 20px",
     display: "grid",
     gridTemplateColumns: isMobile ? "1fr" : "1.08fr 0.92fr",
     gap: isMobile ? "30px" : "34px",
@@ -148,7 +148,9 @@ export const getAuthStyles = (isMobile) => ({
     background: PAPER,
     color: INK,
     outline: "none",
-    fontSize: "15px",
+    // >=16px: iOS auto-zooms the page on focus below that, regardless of
+    // user-scalable=no (unreliable for this specific behavior on WebKit).
+    fontSize: "16px",
     boxSizing: "border-box",
     transition: `border-color var(--duration-hover) ease, box-shadow var(--duration-hover) ease`,
   },
