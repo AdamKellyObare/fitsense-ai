@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,6 +14,7 @@ from models.meal import Meal
 from models.user import User
 from schemas.meal import MealCreate, MealPublic, MealUpdate
 from services.ai_provider import estimate_calories
+from services.photo_generator import generate_meal_photo
 from services.photo_matcher import pick_photo_key
 
 router = APIRouter(prefix="/meals", tags=["meals"])
@@ -29,6 +30,7 @@ async def _get_owned_meal(meal_id: uuid.UUID, db: AsyncSession, current_user: Us
 @router.post("", response_model=MealPublic, status_code=status.HTTP_201_CREATED)
 async def log_meal(
     payload: MealCreate,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
     _: None = Depends(require_csrf),
@@ -45,10 +47,19 @@ async def log_meal(
         fat=estimate["fat"],
         source="openai" if settings.USE_REAL_AI else "mock",
         photo_key=pick_photo_key(payload.food),
+        photo_status="pending" if settings.USE_AI_PHOTOS else "disabled",
     )
     db.add(meal)
     await db.commit()
     await db.refresh(meal)
+
+    # Scheduled after the response-triggering commit above — runs once this
+    # request has already returned, so logging a meal stays exactly as fast
+    # as it is today. photo_key (the stock placeholder) is what the client
+    # shows in the meantime.
+    if settings.USE_AI_PHOTOS:
+        background_tasks.add_task(generate_meal_photo, meal.id, payload.food)
+
     return meal
 
 
@@ -67,6 +78,7 @@ async def get_meals(
 async def update_meal(
     meal_id: uuid.UUID,
     payload: MealUpdate,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
     _: None = Depends(require_csrf),
@@ -84,8 +96,17 @@ async def update_meal(
         meal.source = "openai" if settings.USE_REAL_AI else "mock"
         meal.photo_key = pick_photo_key(payload.food)
 
+        # The food text changed, so any previously-generated photo no longer
+        # matches — clear it and, if enabled, regenerate for the new text.
+        meal.generated_photo_url = None
+        meal.photo_status = "pending" if settings.USE_AI_PHOTOS else "disabled"
+
     await db.commit()
     await db.refresh(meal)
+
+    if payload.food is not None and settings.USE_AI_PHOTOS and meal.photo_status == "pending":
+        background_tasks.add_task(generate_meal_photo, meal.id, meal.food)
+
     return meal
 
 

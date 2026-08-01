@@ -1,4 +1,5 @@
 import { Beef, Droplets, Trash2, Wheat } from "lucide-react";
+import MealPhoto from "./MealPhoto";
 
 function MealHistory({ meals, onDelete }) {
   if (!meals.length) return <p style={styles.empty}>No meals logged yet.</p>;
@@ -9,11 +10,7 @@ function MealHistory({ meals, onDelete }) {
 
       {meals.map((meal) => (
         <div key={meal.id} style={styles.card}>
-          <img
-            src={`/food/${meal.photo_key || "generic-1"}.jpg`}
-            alt={meal.food}
-            style={styles.photo}
-          />
+          <MealPhoto meal={meal} style={styles.photo} />
 
           <div style={styles.body}>
             <div style={styles.topRow}>

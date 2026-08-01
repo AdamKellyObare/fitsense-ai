@@ -25,4 +25,6 @@ class MealPublic(BaseModel):
     fat: Optional[int]
     source: str
     photo_key: Optional[str]
+    generated_photo_url: Optional[str]
+    photo_status: str
     created_at: datetime

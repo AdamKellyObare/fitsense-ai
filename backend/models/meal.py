@@ -25,4 +25,11 @@ class Meal(Base):
     source: Mapped[str] = mapped_column(String(20), default="ai_pending")
     photo_key: Mapped[Optional[str]] = mapped_column(String(40))
 
+    # AI-generated photo (see services/photo_generator.py). photo_key above
+    # remains the immediate stock-photo placeholder shown while this is
+    # still generating (or if it's disabled/failed) — generated_photo_url is
+    # only ever set once a real image is ready.
+    generated_photo_url: Mapped[Optional[str]] = mapped_column(String(500))
+    photo_status: Mapped[str] = mapped_column(String(20), default="disabled")
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)

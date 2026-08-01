@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Beef, Droplets, Pencil, Trash2, Wheat } from "lucide-react";
 import { ApiError, mealsApi } from "../lib/api";
+import MealPhoto from "../components/MealPhoto";
 
 const MotionDiv = motion.div;
 
@@ -139,11 +140,7 @@ function Meals({ meals, setMeals }) {
                 whileHover={{ y: -3, boxShadow: "var(--shadow-lg)" }}
                 transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
               >
-                <img
-                  src={`/food/${meal.photo_key || "generic-1"}.jpg`}
-                  alt={meal.food}
-                  style={styles.photo}
-                />
+                <MealPhoto meal={meal} style={styles.photo} />
 
                 <div style={styles.cardBody}>
                   <h3 style={styles.food}>{meal.food}</h3>

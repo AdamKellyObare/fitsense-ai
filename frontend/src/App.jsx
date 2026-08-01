@@ -63,6 +63,27 @@ function App() {
       .catch(() => setMeals([]));
   }, [user]);
 
+  // AI-generated meal photos finish after the response that logged the meal
+  // already returned (see backend/services/photo_generator.py) — poll while
+  // any meal is still waiting on one, so the placeholder swaps to the real
+  // photo without the user needing to refresh. Stops itself as soon as
+  // nothing is pending.
+  useEffect(() => {
+    const hasPending = meals.some((meal) => meal.photo_status === "pending");
+    if (!hasPending) return;
+
+    const interval = setInterval(() => {
+      mealsApi
+        .list()
+        .then((fetchedMeals) =>
+          setMeals(fetchedMeals.map((meal) => ({ ...meal, timestamp: meal.created_at })))
+        )
+        .catch(() => {});
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [meals]);
+
   useEffect(() => {
     localStorage.setItem("fitsense_water", water);
   }, [water]);
