@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "cap:sync": "vite build && npx cap sync",
+    "cap:sync": "vite build --mode capacitor && npx cap sync",
     "cap:open:ios": "npm run cap:sync && npx cap open ios",
     "cap:open:android": "npm run cap:sync && npx cap open android"
   },

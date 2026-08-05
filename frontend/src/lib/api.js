@@ -1,4 +1,7 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// ?? (not ||) matters here: the production build sets VITE_API_URL="" on
+// purpose (same-origin requests once frontend/backend share a deployment),
+// and "" is falsy — || would wrongly fall back to the dev default below.
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 function getCookie(name) {
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));

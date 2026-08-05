@@ -21,3 +21,7 @@ frontend/node_modules/
 frontend/dist/
 frontend/dist-ssr/
 frontend/.vercel/
+
+# Backend build artifact (frontend build copied in here by the Render
+# build step so FastAPI can serve it as static files)
+backend/static_dist/
