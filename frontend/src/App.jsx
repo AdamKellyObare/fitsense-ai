@@ -1,3 +1,4 @@
+// Force-refresh marker for Vercel deploy cache verification
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
