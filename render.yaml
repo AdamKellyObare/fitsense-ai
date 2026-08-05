@@ -3,6 +3,7 @@ services:
     name: fitsense-ai-backend
     runtime: python
     plan: free
+    rootDir: backend
     buildCommand: "pip install -r requirements.txt"
     startCommand: "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port $PORT"
     envVars:
@@ -18,6 +19,20 @@ services:
         sync: false
       - key: USE_REAL_AI
         value: "true"
+      - key: USE_AI_PHOTOS
+        value: "false"
+      - key: USE_REAL_AI_PHOTOS
+        value: "false"
+      - key: S3_ENDPOINT_URL
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_BUCKET_NAME
+        sync: false
+      - key: S3_PUBLIC_URL_BASE
+        sync: false
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: "15"
       - key: REFRESH_TOKEN_EXPIRE_DAYS
