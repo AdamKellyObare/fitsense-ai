@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { AlertCircle, Camera as CameraIcon, Check, Sparkles } from "lucide-react";
@@ -25,6 +26,7 @@ function fieldsFromUser(user) {
 
 function Settings() {
   const { user, updateProfile } = useAuth();
+  const navigate = useNavigate();
   const [fields, setFields] = useState(() => fieldsFromUser(user));
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(null);
@@ -76,6 +78,7 @@ function Settings() {
         water_target_l: Number(fields.waterTarget),
       });
       setStatus({ type: "success", message: "Settings saved." });
+      setTimeout(() => navigate("/"), 700);
     } catch (err) {
       setStatus({
         type: "error",

@@ -24,6 +24,7 @@ import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Onboarding from "./pages/Onboarding";
 
 const MotionDiv = motion.div;
 
@@ -197,6 +198,10 @@ function App() {
         <Route path="*" element={<Login />} />
       </Routes>
     );
+  }
+
+  if (!user.has_onboarded) {
+    return <Onboarding />;
   }
 
   return (

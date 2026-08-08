@@ -36,6 +36,7 @@ class UserPublic(BaseModel):
     fat_target: int
     water_target_l: float
     email_verified: bool
+    has_onboarded: bool
     created_at: datetime
 
 
@@ -52,3 +53,4 @@ class UserUpdate(BaseModel):
     carb_target: Optional[int] = Field(default=None, ge=0, le=1000)
     fat_target: Optional[int] = Field(default=None, ge=0, le=1000)
     water_target_l: Optional[float] = Field(default=None, ge=0, le=20)
+    has_onboarded: Optional[bool] = None

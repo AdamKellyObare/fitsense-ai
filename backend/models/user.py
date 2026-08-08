@@ -53,6 +53,12 @@ class User(Base):
     fat_target: Mapped[int] = mapped_column(default=65)
     water_target_l: Mapped[float] = mapped_column(default=3.0)
 
+    # default=False (not server_default) is what matters for new rows: the
+    # ORM sends it explicitly on every INSERT, so new registrations get
+    # False regardless of the column's server_default (which exists only to
+    # backfill pre-existing rows to True in the migration that added this).
+    has_onboarded: Mapped[bool] = mapped_column(default=False, server_default="true")
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
