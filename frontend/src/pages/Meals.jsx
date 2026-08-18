@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Beef, Droplets, Pencil, Trash2, Wheat } from "lucide-react";
 import { ApiError, mealsApi } from "../lib/api";
+import { localDateKey } from "../lib/dates";
 import MealPhoto from "../components/MealPhoto";
 
 const MotionDiv = motion.div;
@@ -24,7 +25,7 @@ function Meals({ meals, setMeals }) {
   const [error, setError] = useState("");
 
   const filteredMeals = meals.filter((meal) => {
-    const mealDate = new Date(meal.timestamp).toISOString().split("T")[0];
+    const mealDate = localDateKey(meal.timestamp);
 
     const matchesSearch = meal.food
       ?.toLowerCase()

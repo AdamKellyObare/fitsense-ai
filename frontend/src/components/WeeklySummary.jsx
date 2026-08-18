@@ -8,6 +8,7 @@ import {
   ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
+import { localDateKey } from "../lib/dates";
 
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
@@ -25,17 +26,17 @@ function WeeklySummary({ meals, calorieTarget }) {
   const days = [...Array(7)].map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    return d.toDateString();
+    return { key: localDateKey(d), label: d.toDateString().slice(0, 3) };
   }).reverse();
 
   // build chart data
-  const data = days.map(day => {
+  const data = days.map(({ key, label }) => {
     const total = meals
-      .filter(meal => new Date(meal.timestamp).toDateString() === day)
+      .filter(meal => localDateKey(meal.timestamp) === key)
       .reduce((sum, meal) => sum + (meal.calories || 0), 0);
 
     return {
-      day: day.slice(0, 3),
+      day: label,
       calories: total,
     };
   });

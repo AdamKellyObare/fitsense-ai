@@ -139,33 +139,25 @@ function Settings() {
         <h3 style={styles.sectionTitle}>Profile</h3>
 
         <div style={styles.grid}>
-          <input
-            style={styles.input}
-            placeholder="Name"
-            value={fields.name}
-            onChange={setField("name")}
-          />
+          <div style={styles.fieldGroup}>
+            <label style={styles.fieldLabel}>Name</label>
+            <input style={styles.input} value={fields.name} onChange={setField("name")} />
+          </div>
 
-          <input
-            style={styles.input}
-            placeholder="Age"
-            value={fields.age}
-            onChange={setField("age")}
-          />
+          <div style={styles.fieldGroup}>
+            <label style={styles.fieldLabel}>Age</label>
+            <input style={styles.input} value={fields.age} onChange={setField("age")} />
+          </div>
 
-          <input
-            style={styles.input}
-            placeholder="Height (cm)"
-            value={fields.height}
-            onChange={setField("height")}
-          />
+          <div style={styles.fieldGroup}>
+            <label style={styles.fieldLabel}>Height (cm)</label>
+            <input style={styles.input} value={fields.height} onChange={setField("height")} />
+          </div>
 
-          <input
-            style={styles.input}
-            placeholder="Weight (kg)"
-            value={fields.weight}
-            onChange={setField("weight")}
-          />
+          <div style={styles.fieldGroup}>
+            <label style={styles.fieldLabel}>Weight (kg)</label>
+            <input style={styles.input} value={fields.weight} onChange={setField("weight")} />
+          </div>
 
           <select style={styles.input} value={fields.sex} onChange={setField("sex")}>
             <option value="">Sex (used only to estimate targets)</option>
@@ -203,40 +195,30 @@ function Settings() {
         </button>
 
         <div style={styles.grid}>
-          <input
-            style={styles.input}
-            placeholder="Daily Calories"
-            value={fields.calorieTarget}
-            onChange={setField("calorieTarget")}
-          />
+          <div style={styles.fieldGroup}>
+            <label style={styles.fieldLabel}>Daily Calories</label>
+            <input style={styles.input} value={fields.calorieTarget} onChange={setField("calorieTarget")} />
+          </div>
 
-          <input
-            style={styles.input}
-            placeholder="Protein Goal (g)"
-            value={fields.proteinTarget}
-            onChange={setField("proteinTarget")}
-          />
+          <div style={styles.fieldGroup}>
+            <label style={styles.fieldLabel}>Protein Goal (g)</label>
+            <input style={styles.input} value={fields.proteinTarget} onChange={setField("proteinTarget")} />
+          </div>
 
-          <input
-            style={styles.input}
-            placeholder="Carb Goal (g)"
-            value={fields.carbTarget}
-            onChange={setField("carbTarget")}
-          />
+          <div style={styles.fieldGroup}>
+            <label style={styles.fieldLabel}>Carb Goal (g)</label>
+            <input style={styles.input} value={fields.carbTarget} onChange={setField("carbTarget")} />
+          </div>
 
-          <input
-            style={styles.input}
-            placeholder="Fat Goal (g)"
-            value={fields.fatTarget}
-            onChange={setField("fatTarget")}
-          />
+          <div style={styles.fieldGroup}>
+            <label style={styles.fieldLabel}>Fat Goal (g)</label>
+            <input style={styles.input} value={fields.fatTarget} onChange={setField("fatTarget")} />
+          </div>
 
-          <input
-            style={styles.input}
-            placeholder="Water Goal (L)"
-            value={fields.waterTarget}
-            onChange={setField("waterTarget")}
-          />
+          <div style={styles.fieldGroup}>
+            <label style={styles.fieldLabel}>Water Goal (L)</label>
+            <input style={styles.input} value={fields.waterTarget} onChange={setField("waterTarget")} />
+          </div>
         </div>
 
         <div style={styles.actions}>
@@ -338,6 +320,18 @@ card: {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
   gap: "14px",
+},
+fieldGroup: {
+  display: "flex",
+  flexDirection: "column",
+  gap: "6px",
+},
+fieldLabel: {
+  fontFamily: "var(--font-mono)",
+  fontSize: "11px",
+  letterSpacing: "0.08em",
+  textTransform: "uppercase",
+  color: "var(--graphite)",
 },
 input: {
   width: "100%",

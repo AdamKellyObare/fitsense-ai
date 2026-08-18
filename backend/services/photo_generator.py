@@ -19,9 +19,12 @@ from services.photo_matcher import pick_photo_key
 logger = logging.getLogger(__name__)
 
 _PROMPT_TEMPLATE = (
-    "Professional food photography of {food}, plated attractively, natural "
-    "lighting, shallow depth of field, appetizing, photorealistic, no text "
-    "or watermarks."
+    "Professional food photography of {food}, prepared exactly as described "
+    "— if a cooking method is mentioned (boiled, steamed, grilled, fried, "
+    "raw, etc.), the food's visual appearance must accurately reflect that "
+    "method rather than defaulting to a seared or fried look. Plated "
+    "attractively, natural lighting, shallow depth of field, appetizing, "
+    "photorealistic, no text or watermarks."
 )
 
 _client: Optional[AsyncOpenAI] = None

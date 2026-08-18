@@ -8,6 +8,7 @@ import { useAuth } from "./context/AuthContext";
 import { useTheme } from "./hooks/useTheme";
 import { useViewport } from "./hooks/useViewport";
 import { ApiError, mealsApi } from "./lib/api";
+import { isToday } from "./lib/dates";
 
 import FoodInput from "./components/FoodInput";
 import MealHistory from "./components/MealHistory";
@@ -125,11 +126,7 @@ function App() {
     }
   };
 
-  const today = new Date().toDateString();
-
-  const todaysMeals = meals.filter(
-    (meal) => new Date(meal.timestamp).toDateString() === today
-  );
+  const todaysMeals = meals.filter((meal) => isToday(meal.timestamp));
 
   const totalCaloriesToday = todaysMeals.reduce(
     (sum, meal) => sum + (meal.calories || 0),
@@ -194,8 +191,8 @@ function App() {
   if (!user) {
     return (
       <Routes>
-        <Route path="/register" element={<Register />} />
-        <Route path="*" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="*" element={<Register />} />
       </Routes>
     );
   }
