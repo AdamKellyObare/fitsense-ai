@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
-import { AlertCircle, Camera as CameraIcon, Check, Sparkles } from "lucide-react";
+import { AlertCircle, Camera as CameraIcon, Check, Ruler, Sparkles } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { ApiError } from "../lib/api";
 import { estimateTargets } from "../lib/targets";
+import { cmToFeetInches, feetInchesToCm, kgToLb, lbToKg } from "../lib/units";
 
 function fieldsFromUser(user) {
   return {
@@ -24,6 +25,14 @@ function fieldsFromUser(user) {
   };
 }
 
+// Display-only imperial state, derived from the canonical metric fields —
+// only recomputed at load/discard/toggle time, never on every render (that
+// would reformat the input mid-keystroke and fight the user's typing).
+function imperialFromMetric(heightCm, weightKg) {
+  const { feet, inches } = cmToFeetInches(heightCm);
+  return { heightFeet: feet, heightInches: inches, weightLb: kgToLb(weightKg) };
+}
+
 function Settings() {
   const { user, updateProfile } = useAuth();
   const navigate = useNavigate();
@@ -31,7 +40,41 @@ function Settings() {
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(null);
 
+  const [units, setUnits] = useState(() => localStorage.getItem("fitsense_units") || "metric");
+  const [imperial, setImperial] = useState(() => imperialFromMetric(fields.height, fields.weight));
+
+  useEffect(() => {
+    localStorage.setItem("fitsense_units", units);
+  }, [units]);
+
+  const toggleUnits = () => {
+    setUnits((prev) => {
+      const next = prev === "metric" ? "imperial" : "metric";
+      if (next === "imperial") {
+        // Re-derive from the current canonical metric value so the display
+        // never shows anything stale from before the last toggle.
+        setImperial(imperialFromMetric(fields.height, fields.weight));
+      }
+      return next;
+    });
+  };
+
   const setField = (key) => (e) => setFields((prev) => ({ ...prev, [key]: e.target.value }));
+
+  const setHeightImperial = (part) => (e) => {
+    const value = e.target.value;
+    setImperial((prev) => {
+      const next = { ...prev, [part]: value };
+      setFields((f) => ({ ...f, height: feetInchesToCm(next.heightFeet, next.heightInches) }));
+      return next;
+    });
+  };
+
+  const setWeightImperial = (e) => {
+    const value = e.target.value;
+    setImperial((prev) => ({ ...prev, weightLb: value }));
+    setFields((prev) => ({ ...prev, weight: lbToKg(value) }));
+  };
 
   const autoCalculate = () => {
     const suggestion = estimateTargets({
@@ -90,7 +133,9 @@ function Settings() {
   };
 
   const discardChanges = () => {
-    setFields(fieldsFromUser(user));
+    const reset = fieldsFromUser(user);
+    setFields(reset);
+    setImperial(imperialFromMetric(reset.height, reset.weight));
     setStatus(null);
   };
 
@@ -136,7 +181,13 @@ function Settings() {
           </div>
         )}
 
-        <h3 style={styles.sectionTitle}>Profile</h3>
+        <div style={styles.sectionHeaderRow}>
+          <h3 style={{ ...styles.sectionTitle, marginTop: 0 }}>Profile</h3>
+          <button type="button" style={styles.unitsToggleBtn} onClick={toggleUnits}>
+            <Ruler size={14} strokeWidth={2.5} />
+            {units === "metric" ? "Switch to lb / ft+in" : "Switch to kg / cm"}
+          </button>
+        </div>
 
         <div style={styles.grid}>
           <div style={styles.fieldGroup}>
@@ -149,15 +200,42 @@ function Settings() {
             <input style={styles.input} value={fields.age} onChange={setField("age")} />
           </div>
 
-          <div style={styles.fieldGroup}>
-            <label style={styles.fieldLabel}>Height (cm)</label>
-            <input style={styles.input} value={fields.height} onChange={setField("height")} />
-          </div>
+          {units === "metric" ? (
+            <div style={styles.fieldGroup}>
+              <label style={styles.fieldLabel}>Height (cm)</label>
+              <input style={styles.input} value={fields.height} onChange={setField("height")} />
+            </div>
+          ) : (
+            <div style={styles.fieldGroup}>
+              <label style={styles.fieldLabel}>Height (ft + in)</label>
+              <div style={styles.compoundInputRow}>
+                <input
+                  style={{ ...styles.input, flex: 1, minWidth: 0 }}
+                  placeholder="ft"
+                  value={imperial.heightFeet}
+                  onChange={setHeightImperial("heightFeet")}
+                />
+                <input
+                  style={{ ...styles.input, flex: 1, minWidth: 0 }}
+                  placeholder="in"
+                  value={imperial.heightInches}
+                  onChange={setHeightImperial("heightInches")}
+                />
+              </div>
+            </div>
+          )}
 
-          <div style={styles.fieldGroup}>
-            <label style={styles.fieldLabel}>Weight (kg)</label>
-            <input style={styles.input} value={fields.weight} onChange={setField("weight")} />
-          </div>
+          {units === "metric" ? (
+            <div style={styles.fieldGroup}>
+              <label style={styles.fieldLabel}>Weight (kg)</label>
+              <input style={styles.input} value={fields.weight} onChange={setField("weight")} />
+            </div>
+          ) : (
+            <div style={styles.fieldGroup}>
+              <label style={styles.fieldLabel}>Weight (lb)</label>
+              <input style={styles.input} value={imperial.weightLb} onChange={setWeightImperial} />
+            </div>
+          )}
 
           <select style={styles.input} value={fields.sex} onChange={setField("sex")}>
             <option value="">Sex (used only to estimate targets)</option>
@@ -314,6 +392,36 @@ card: {
     marginTop: "24px",
     marginBottom: "14px",
     fontSize: "20px",
+  },
+
+  sectionHeaderRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: "10px",
+    marginTop: "24px",
+    marginBottom: "14px",
+  },
+
+  unitsToggleBtn: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    padding: "9px 16px",
+    borderRadius: "var(--radius-full)",
+    border: "1px solid var(--line)",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "13px",
+    background: "var(--paper-raised)",
+    color: "var(--ink)",
+    transition: "border-color var(--duration-hover) ease, transform var(--duration-hover) var(--ease-out)",
+  },
+
+  compoundInputRow: {
+    display: "flex",
+    gap: "8px",
   },
 
  grid: {
