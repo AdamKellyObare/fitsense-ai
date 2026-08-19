@@ -1,4 +1,4 @@
-function FoodInput({ food, setFood, onSubmit, loading }) {
+function FoodInput({ food, setFood, onSubmit, loading, onPreview, previewLoading }) {
   return (
     <>
       <input
@@ -9,9 +9,20 @@ function FoodInput({ food, setFood, onSubmit, loading }) {
         style={styles.input}
       />
 
-      <button onClick={onSubmit} disabled={loading} style={styles.button}>
-        {loading ? "Analyzing meal..." : "Analyze Meal"}
-      </button>
+      <div style={styles.buttonRow}>
+        <button onClick={onSubmit} disabled={loading || previewLoading} style={styles.button}>
+          {loading ? "Analyzing meal..." : "Analyze Meal"}
+        </button>
+
+        <button
+          onClick={onPreview}
+          disabled={loading || previewLoading}
+          style={styles.previewButton}
+          type="button"
+        >
+          {previewLoading ? "Previewing..." : "Just Preview"}
+        </button>
+      </div>
     </>
   );
 }
@@ -35,8 +46,13 @@ const styles = {
     boxSizing: "border-box",
   },
 
+  buttonRow: {
+    display: "flex",
+    gap: "10px",
+  },
+
   button: {
-    width: "100%",
+    flex: 1,
     padding: "13px",
     fontSize: "15px",
     cursor: "pointer",
@@ -46,6 +62,21 @@ const styles = {
     border: "none",
     fontWeight: "600",
     transition: "transform var(--duration-hover) var(--ease-out), background var(--duration-hover) ease",
+  },
+
+  // Ghost/outline treatment — visually subordinate to "Analyze Meal" since
+  // it's the lower-commitment action (nothing gets saved).
+  previewButton: {
+    flex: 1,
+    padding: "13px",
+    fontSize: "15px",
+    cursor: "pointer",
+    borderRadius: "var(--radius-full)",
+    background: "transparent",
+    color: "var(--ink)",
+    border: "1px solid var(--line)",
+    fontWeight: "600",
+    transition: "border-color var(--duration-hover) ease, transform var(--duration-hover) var(--ease-out)",
   },
 };
 

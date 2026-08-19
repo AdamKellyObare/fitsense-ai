@@ -12,7 +12,7 @@ from core.deps import get_current_user, require_csrf
 from db.session import get_db
 from models.meal import Meal
 from models.user import User
-from schemas.meal import MealCreate, MealPublic, MealUpdate
+from schemas.meal import MealCreate, MealPreview, MealPublic, MealUpdate
 from services.ai_provider import estimate_calories
 from services.photo_generator import generate_meal_photo
 from services.photo_matcher import pick_photo_key
@@ -35,7 +35,22 @@ async def log_meal(
     current_user: User = Depends(get_current_user),
     _: None = Depends(require_csrf),
 ) -> Meal:
-    estimate = estimate_calories(payload.food)
+    # Reuse a preview's already-computed numbers if provided (see
+    # POST /meals/preview) instead of paying for and running a second real
+    # AI estimate — also guarantees what gets logged exactly matches what
+    # was previewed. Falls back to a fresh estimate otherwise, unchanged
+    # from before.
+    if payload.calories is not None:
+        estimate = {
+            "calories": payload.calories,
+            "protein": payload.protein,
+            "carbs": payload.carbs,
+            "fat": payload.fat,
+        }
+        source = payload.source or ("openai" if settings.USE_REAL_AI else "mock")
+    else:
+        estimate = estimate_calories(payload.food)
+        source = "openai" if settings.USE_REAL_AI else "mock"
 
     meal = Meal(
         user_id=current_user.id,
@@ -45,7 +60,7 @@ async def log_meal(
         protein=estimate["protein"],
         carbs=estimate["carbs"],
         fat=estimate["fat"],
-        source="openai" if settings.USE_REAL_AI else "mock",
+        source=source,
         photo_key=pick_photo_key(payload.food),
         photo_status="pending" if settings.USE_AI_PHOTOS else "disabled",
     )
@@ -61,6 +76,28 @@ async def log_meal(
         background_tasks.add_task(generate_meal_photo, meal.id, payload.food)
 
     return meal
+
+
+@router.post("/preview", response_model=MealPreview)
+async def preview_meal(
+    payload: MealCreate,
+    current_user: User = Depends(get_current_user),
+    _: None = Depends(require_csrf),
+) -> MealPreview:
+    # No db.add/commit, no background_tasks — nothing is persisted. Still
+    # requires CSRF like other mutating-ish endpoints: this has a real cost
+    # side effect (a real AI call under USE_REAL_AI) even without a DB write,
+    # so it shouldn't be forgeable cross-site.
+    estimate = estimate_calories(payload.food)
+    return MealPreview(
+        food=payload.food,
+        goal=current_user.goal,
+        calories=estimate["calories"],
+        protein=estimate["protein"],
+        carbs=estimate["carbs"],
+        fat=estimate["fat"],
+        source="openai" if settings.USE_REAL_AI else "mock",
+    )
 
 
 @router.get("", response_model=List[MealPublic])

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Beef, Droplet, Droplets, Flame, Sparkles, Wheat } from "lucide-react";
+import { Beef, Droplet, Droplets, Eye, Flame, Sparkles, Wheat } from "lucide-react";
 
 import { useAuth } from "./context/AuthContext";
 import { useTheme } from "./hooks/useTheme";
@@ -48,6 +48,13 @@ function App() {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Entirely separate from result/error above — a preview never touches
+  // `meals` state, which is what guarantees it can't affect Today's Total
+  // or MealHistory no matter what.
+  const [previewResult, setPreviewResult] = useState(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState("");
 
   const [water, setWater] = useState(() => {
     return Number(localStorage.getItem("fitsense_water") || 0);
@@ -102,6 +109,8 @@ function App() {
     setResult("");
     setError("");
     setFood("");
+    setPreviewResult(null);
+    setPreviewError("");
   }, [user?.id]);
 
   const estimateCalories = async () => {
@@ -110,6 +119,8 @@ function App() {
     setLoading(true);
     setError("");
     setResult("");
+    setPreviewResult(null);
+    setPreviewError("");
 
     try {
       const newMeal = await mealsApi.create(food);
@@ -121,6 +132,52 @@ function App() {
       setFood("");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to analyze meal.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const previewMeal = async () => {
+    if (!food) return;
+
+    setPreviewLoading(true);
+    setPreviewError("");
+    setResult("");
+    setError("");
+
+    try {
+      const preview = await mealsApi.preview(food);
+      setPreviewResult(preview);
+    } catch (err) {
+      setPreviewError(err instanceof ApiError ? err.message : "Failed to preview meal.");
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const logPreviewedMeal = async () => {
+    if (!previewResult) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const newMeal = await mealsApi.create(previewResult.food, {
+        calories: previewResult.calories,
+        protein: previewResult.protein,
+        carbs: previewResult.carbs,
+        fat: previewResult.fat,
+        source: previewResult.source,
+      });
+      setMeals((prevMeals) => [
+        ...prevMeals,
+        { ...newMeal, timestamp: newMeal.created_at },
+      ]);
+      setResult(`Estimated calories for ${newMeal.food}: ${newMeal.calories} kcal (${user.goal})`);
+      setPreviewResult(null);
+      setFood("");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to log meal.");
     } finally {
       setLoading(false);
     }
@@ -163,9 +220,11 @@ function App() {
   const carbTarget = user?.carb_target || 0;
   const fatTarget = user?.fat_target || 0;
 
-  const proteinPercent = proteinTarget > 0 ? Math.min((totalProteinToday / proteinTarget) * 100, 100) : 0;
-  const carbPercent = carbTarget > 0 ? Math.min((totalCarbsToday / carbTarget) * 100, 100) : 0;
-  const fatPercent = fatTarget > 0 ? Math.min((totalFatToday / fatTarget) * 100, 100) : 0;
+  // Kept short deliberately — this renders inside a small ring, and longer
+  // phrasing overlapped the ring stroke. The overage arc itself already
+  // shows direction, so the caption just needs the amount.
+  const macroCaption = (actual, target) =>
+    target > 0 && actual > target ? `+${actual - target}g` : `of ${target}g goal`;
 
   const goalTips = {
     cutting: "You're cutting — prioritize protein to preserve muscle while in a deficit.",
@@ -237,10 +296,36 @@ function App() {
                         setFood={setFood}
                         onSubmit={estimateCalories}
                         loading={loading}
+                        onPreview={previewMeal}
+                        previewLoading={previewLoading}
                       />
 
                       {result && <div style={styles.result}>{result}</div>}
                       {error && <div style={styles.error}>{error}</div>}
+
+                      {previewResult && (
+                        <div style={styles.previewPanel}>
+                          <div style={styles.previewLabel}>
+                            <Eye size={13} strokeWidth={2.5} /> Preview — not saved
+                          </div>
+                          <p style={styles.previewText}>
+                            This is a preview only. Nothing has been logged.
+                          </p>
+                          <p style={styles.previewText}>
+                            <strong>{previewResult.food}</strong>: {previewResult.calories} kcal,{" "}
+                            {previewResult.protein}g protein, {previewResult.carbs}g carbs,{" "}
+                            {previewResult.fat}g fat
+                          </p>
+                          <button
+                            onClick={logPreviewedMeal}
+                            disabled={loading}
+                            style={styles.previewLogButton}
+                          >
+                            {loading ? "Logging..." : "Log This Meal"}
+                          </button>
+                        </div>
+                      )}
+                      {previewError && <div style={styles.error}>{previewError}</div>}
 
                       <MotionDiv
                         style={styles.statsRow}
@@ -338,35 +423,51 @@ function App() {
                           caption={`of ${calorieTarget} kcal goal`}
                         />
 
-                        <div style={styles.macroBars}>
-                          <div style={styles.macroBarRow}>
-                            <div style={styles.macroBarLabel}>
-                              <Beef size={14} strokeWidth={2.4} /> Protein
-                            </div>
-                            <div style={styles.progressBar}>
-                              <div style={{ ...styles.progressFill, width: `${proteinPercent}%` }} />
-                            </div>
-                            <span style={styles.macroBarValue}>{totalProteinToday}/{proteinTarget}g</span>
-                          </div>
+                      </div>
 
-                          <div style={styles.macroBarRow}>
-                            <div style={styles.macroBarLabel}>
-                              <Wheat size={14} strokeWidth={2.4} /> Carbs
-                            </div>
-                            <div style={styles.progressBar}>
-                              <div style={{ ...styles.progressFill, width: `${carbPercent}%` }} />
-                            </div>
-                            <span style={styles.macroBarValue}>{totalCarbsToday}/{carbTarget}g</span>
+                      <div style={styles.macroRingRow}>
+                        <div style={styles.macroRingItem}>
+                          <ProgressRing
+                            value={totalProteinToday}
+                            max={proteinTarget}
+                            size={108}
+                            strokeWidth={9}
+                            unit="g"
+                            caption={macroCaption(totalProteinToday, proteinTarget)}
+                            showOverage
+                          />
+                          <div style={styles.macroRingLabel}>
+                            <Beef size={13} strokeWidth={2.4} /> Protein
                           </div>
+                        </div>
 
-                          <div style={styles.macroBarRow}>
-                            <div style={styles.macroBarLabel}>
-                              <Droplets size={14} strokeWidth={2.4} /> Fat
-                            </div>
-                            <div style={styles.progressBar}>
-                              <div style={{ ...styles.progressFill, width: `${fatPercent}%` }} />
-                            </div>
-                            <span style={styles.macroBarValue}>{totalFatToday}/{fatTarget}g</span>
+                        <div style={styles.macroRingItem}>
+                          <ProgressRing
+                            value={totalCarbsToday}
+                            max={carbTarget}
+                            size={108}
+                            strokeWidth={9}
+                            unit="g"
+                            caption={macroCaption(totalCarbsToday, carbTarget)}
+                            showOverage
+                          />
+                          <div style={styles.macroRingLabel}>
+                            <Wheat size={13} strokeWidth={2.4} /> Carbs
+                          </div>
+                        </div>
+
+                        <div style={styles.macroRingItem}>
+                          <ProgressRing
+                            value={totalFatToday}
+                            max={fatTarget}
+                            size={108}
+                            strokeWidth={9}
+                            unit="g"
+                            caption={macroCaption(totalFatToday, fatTarget)}
+                            showOverage
+                          />
+                          <div style={styles.macroRingLabel}>
+                            <Droplets size={13} strokeWidth={2.4} /> Fat
                           </div>
                         </div>
                       </div>
@@ -494,34 +595,29 @@ const getStyles = (isMobile, isDesktop) => ({
     flexWrap: "wrap",
   },
 
-  macroBars: {
-    flex: 1,
-    minWidth: "180px",
+  macroRingRow: {
     display: "flex",
-    flexDirection: "column",
-    gap: "16px",
+    gap: "20px",
+    flexWrap: "wrap",
+    marginTop: "26px",
   },
 
-  macroBarRow: {
+  macroRingItem: {
     display: "flex",
     flexDirection: "column",
-    gap: "6px",
+    alignItems: "center",
+    gap: "10px",
   },
 
-  macroBarLabel: {
+  macroRingLabel: {
     display: "flex",
     alignItems: "center",
     gap: "6px",
     fontFamily: "var(--font-mono)",
     fontSize: "11px",
+    letterSpacing: "0.04em",
+    textTransform: "uppercase",
     color: "var(--graphite)",
-  },
-
-  macroBarValue: {
-    fontFamily: "var(--font-mono)",
-    fontSize: "11px",
-    color: "var(--graphite)",
-    alignSelf: "flex-end",
   },
 
   container: {
@@ -630,6 +726,47 @@ const getStyles = (isMobile, isDesktop) => ({
     fontSize: "15px",
     fontWeight: "600",
     color: "var(--ink)",
+  },
+
+  // Dashed border (every real content card in the app uses a solid one) +
+  // an explicit "not saved" label — deliberately can't be mistaken for a
+  // logged meal at a glance.
+  previewPanel: {
+    marginTop: "25px",
+    padding: "18px",
+    borderRadius: "var(--radius-md)",
+    border: "1px dashed var(--line)",
+    background: "var(--paper)",
+  },
+
+  previewLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    fontFamily: "var(--font-mono)",
+    fontSize: "11px",
+    fontWeight: "700",
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
+    color: "var(--oxblood)",
+    marginBottom: "10px",
+  },
+
+  previewText: {
+    fontSize: "14px",
+    color: "var(--ink)",
+    margin: "0 0 10px",
+  },
+
+  previewLogButton: {
+    padding: "11px 20px",
+    borderRadius: "var(--radius-full)",
+    border: "none",
+    cursor: "pointer",
+    background: "var(--oxblood)",
+    color: "#f5efe8",
+    fontWeight: "600",
+    fontSize: "14px",
   },
 
   error: {

@@ -159,7 +159,11 @@ export const authApi = {
 
 export const mealsApi = {
   list: () => apiFetch("/meals"),
-  create: (food) => apiFetch("/meals", { method: "POST", body: { food } }),
+  // precomputed (optional): { calories, protein, carbs, fat, source } from a
+  // prior preview() call — reuses those exact numbers instead of paying for
+  // and running a second real AI estimate.
+  create: (food, precomputed) => apiFetch("/meals", { method: "POST", body: { food, ...precomputed } }),
+  preview: (food) => apiFetch("/meals/preview", { method: "POST", body: { food } }),
   update: (id, { food }) => apiFetch(`/meals/${id}`, { method: "PATCH", body: { food } }),
   remove: (id) => apiFetch(`/meals/${id}`, { method: "DELETE" }),
 };
