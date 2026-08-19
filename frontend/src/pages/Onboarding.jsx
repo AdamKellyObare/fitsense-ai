@@ -4,6 +4,7 @@ import { ArrowLeft, Beef, Camera, CheckCircle2, Droplets, Flame, Sparkles, Wheat
 import { useAuth } from "../context/AuthContext";
 import { ApiError } from "../lib/api";
 import { estimateTargets } from "../lib/targets";
+import { reduceMotion } from "../lib/motion";
 import { useViewport } from "../hooks/useViewport";
 import { getOnboardingStyles } from "./onboardingStyles";
 
@@ -54,9 +55,6 @@ const LOADING_MESSAGES = [
 
 const BUILDING_MIN_MS = 2800;
 const MESSAGE_INTERVAL_MS = 700;
-
-const reduceMotion =
-  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const slideVariants = {
   enter: { opacity: 0, x: 24 },

@@ -10,6 +10,7 @@ import { useViewport } from "./hooks/useViewport";
 import { ApiError, mealsApi } from "./lib/api";
 import { isToday } from "./lib/dates";
 
+import AmbientGlow from "./components/AmbientGlow";
 import FoodInput from "./components/FoodInput";
 import MealHistory from "./components/MealHistory";
 import ProgressRing from "./components/ProgressRing";
@@ -291,41 +292,47 @@ function App() {
                         Smart calorie insights based on your fitness goal
                       </p>
 
-                      <FoodInput
-                        food={food}
-                        setFood={setFood}
-                        onSubmit={estimateCalories}
-                        loading={loading}
-                        onPreview={previewMeal}
-                        previewLoading={previewLoading}
-                      />
+                      <div style={styles.aiWaitZone}>
+                        <AmbientGlow active={loading || previewLoading} />
 
-                      {result && <div style={styles.result}>{result}</div>}
-                      {error && <div style={styles.error}>{error}</div>}
+                        <div style={styles.aiWaitContent}>
+                        <FoodInput
+                          food={food}
+                          setFood={setFood}
+                          onSubmit={estimateCalories}
+                          loading={loading}
+                          onPreview={previewMeal}
+                          previewLoading={previewLoading}
+                        />
 
-                      {previewResult && (
-                        <div style={styles.previewPanel}>
-                          <div style={styles.previewLabel}>
-                            <Eye size={13} strokeWidth={2.5} /> Preview — not saved
+                        {result && <div style={styles.result}>{result}</div>}
+                        {error && <div style={styles.error}>{error}</div>}
+
+                        {previewResult && (
+                          <div style={styles.previewPanel}>
+                            <div style={styles.previewLabel}>
+                              <Eye size={13} strokeWidth={2.5} /> Preview — not saved
+                            </div>
+                            <p style={styles.previewText}>
+                              This is a preview only. Nothing has been logged.
+                            </p>
+                            <p style={styles.previewText}>
+                              <strong>{previewResult.food}</strong>: {previewResult.calories} kcal,{" "}
+                              {previewResult.protein}g protein, {previewResult.carbs}g carbs,{" "}
+                              {previewResult.fat}g fat
+                            </p>
+                            <button
+                              onClick={logPreviewedMeal}
+                              disabled={loading}
+                              style={styles.previewLogButton}
+                            >
+                              {loading ? "Logging..." : "Log This Meal"}
+                            </button>
                           </div>
-                          <p style={styles.previewText}>
-                            This is a preview only. Nothing has been logged.
-                          </p>
-                          <p style={styles.previewText}>
-                            <strong>{previewResult.food}</strong>: {previewResult.calories} kcal,{" "}
-                            {previewResult.protein}g protein, {previewResult.carbs}g carbs,{" "}
-                            {previewResult.fat}g fat
-                          </p>
-                          <button
-                            onClick={logPreviewedMeal}
-                            disabled={loading}
-                            style={styles.previewLogButton}
-                          >
-                            {loading ? "Logging..." : "Log This Meal"}
-                          </button>
+                        )}
+                        {previewError && <div style={styles.error}>{previewError}</div>}
                         </div>
-                      )}
-                      {previewError && <div style={styles.error}>{previewError}</div>}
+                      </div>
 
                       <MotionDiv
                         style={styles.statsRow}
@@ -631,6 +638,19 @@ const getStyles = (isMobile, isDesktop) => ({
     maxWidth: "560px",
     margin: "0 auto",
     minWidth: 0,
+  },
+
+  // Scoped tightly to the input/output area that's actually waiting on the
+  // AI, not the whole dashboard card — the stat cards, water tracker, and
+  // AI Coach below have nothing to do with the pending request.
+  aiWaitZone: {
+    position: "relative",
+    borderRadius: "var(--radius-lg)",
+  },
+
+  aiWaitContent: {
+    position: "relative",
+    zIndex: 1,
   },
 
   title: {
