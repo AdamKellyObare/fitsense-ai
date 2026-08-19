@@ -4,9 +4,9 @@ import { ArrowLeft, Beef, Camera, CheckCircle2, Droplets, Flame, Sparkles, Wheat
 import { useAuth } from "../context/AuthContext";
 import { ApiError } from "../lib/api";
 import { estimateTargets } from "../lib/targets";
-import { reduceMotion } from "../lib/motion";
 import { useViewport } from "../hooks/useViewport";
 import { getOnboardingStyles } from "./onboardingStyles";
+import AmbientGlow from "../components/AmbientGlow";
 
 const MotionDiv = motion.div;
 
@@ -362,32 +362,27 @@ function Onboarding() {
 
       case "building":
         return (
-          <div style={styles.card}>
-            <MotionDiv
-              style={styles.iconCircle}
-              animate={reduceMotion ? { opacity: 0.7 } : { opacity: [0.4, 0.9, 0.4] }}
-              transition={
-                reduceMotion
-                  ? { duration: 0 }
-                  : { duration: 1.6, repeat: Infinity, ease: "easeInOut" }
-              }
-            >
-              <Sparkles size={28} strokeWidth={2.2} />
-            </MotionDiv>
-            <h1 style={styles.title}>Building your plan</h1>
-            <p style={styles.bodyText}>{LOADING_MESSAGES[loadingMessageIndex]}</p>
+          <div style={{ ...styles.card, position: "relative" }}>
+            <AmbientGlow active />
+            <div style={styles.aiWaitContent}>
+              <div style={styles.iconCircle}>
+                <Sparkles size={28} strokeWidth={2.2} />
+              </div>
+              <h1 style={styles.title}>Building your plan</h1>
+              <p style={styles.bodyText}>{LOADING_MESSAGES[loadingMessageIndex]}</p>
 
-            {error && (
-              <>
-                <div style={styles.errorBox}>{error}</div>
-                <button
-                  style={{ ...styles.primaryButton, marginTop: "16px" }}
-                  onClick={() => setRetryCount((c) => c + 1)}
-                >
-                  Retry
-                </button>
-              </>
-            )}
+              {error && (
+                <>
+                  <div style={styles.errorBox}>{error}</div>
+                  <button
+                    style={{ ...styles.primaryButton, marginTop: "16px" }}
+                    onClick={() => setRetryCount((c) => c + 1)}
+                  >
+                    Retry
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         );
 

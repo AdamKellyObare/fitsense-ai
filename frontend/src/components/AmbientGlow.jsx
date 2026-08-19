@@ -21,8 +21,8 @@ function AmbientGlow({ active }) {
           initial={{ opacity: 0 }}
           animate={
             reduceMotion
-              ? { opacity: 0.5 }
-              : { opacity: [0.35, 0.65, 0.35], scale: [0.96, 1.02, 0.96] }
+              ? { opacity: 0.6 }
+              : { opacity: [0.45, 0.75, 0.45], scale: [0.96, 1.02, 0.96] }
           }
           // exit needs its own short, non-repeating transition — without
           // this it inherits the looping transition below (duration: 2.4,

@@ -59,6 +59,19 @@ export const getOnboardingStyles = (isMobile) => ({
     textAlign: "center",
   },
 
+  // Positioned content sitting above an AmbientGlow sibling (the "building"
+  // step) — non-positioned content actually paints *before* a positioned
+  // z-index:0 sibling in CSS stacking order, so without this the glow would
+  // sit on top of the content instead of behind it.
+  aiWaitContent: {
+    position: "relative",
+    zIndex: 1,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    width: "100%",
+  },
+
   iconCircle: {
     width: "64px",
     height: "64px",

@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Capacitor } from "@capacitor/core";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { AlertCircle, Camera as CameraIcon, Check, Ruler, Sparkles } from "lucide-react";
+
+const MotionDiv = motion.div;
+const EASTER_EGG_KEY = "fitsense_settings_easter_egg_seen";
 import { useAuth } from "../context/AuthContext";
 import { ApiError } from "../lib/api";
 import { estimateTargets } from "../lib/targets";
@@ -39,6 +43,10 @@ function Settings() {
   const [fields, setFields] = useState(() => fieldsFromUser(user));
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(null);
+
+  // Checked once — a genuine one-time reveal, not re-shown on later visits
+  // once localStorage records it's already been seen.
+  const [easterEggAlreadySeen] = useState(() => localStorage.getItem(EASTER_EGG_KEY) === "true");
 
   const [units, setUnits] = useState(() => localStorage.getItem("fitsense_units") || "metric");
   const [imperial, setImperial] = useState(() => imperialFromMetric(fields.height, fields.weight));
@@ -333,6 +341,20 @@ function Settings() {
             )}
           </div>
         )}
+
+        {!easterEggAlreadySeen && (
+          <MotionDiv
+            style={styles.easterEgg}
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
+            onViewportEnter={() => localStorage.setItem(EASTER_EGG_KEY, "true")}
+          >
+            <Check size={14} strokeWidth={2.5} />
+            You made it to the bottom. Not everyone does.
+          </MotionDiv>
+        )}
       </div>
     </div>
   );
@@ -481,6 +503,22 @@ input: {
     background: "rgba(var(--oxblood-rgb), 0.1)",
     color: "var(--oxblood)",
     fontSize: "14px",
+  },
+
+  // Quiet, understated on purpose — a reward for the attentive few, not an
+  // alert or a call to action, so it deliberately doesn't use the oxblood
+  // accent the rest of the page reserves for that.
+  easterEgg: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    marginTop: "28px",
+    padding: "10px 16px",
+    borderRadius: "var(--radius-full)",
+    background: "var(--paper)",
+    border: "1px solid var(--line)",
+    color: "var(--graphite)",
+    fontSize: "13px",
   },
 
   successBanner: {
