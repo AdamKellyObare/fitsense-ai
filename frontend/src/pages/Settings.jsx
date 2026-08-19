@@ -33,6 +33,25 @@ function EggIcon() {
   );
 }
 
+// Own small SVG (not a path nested inside EggIcon's viewBox) so its scale
+// animation transforms from its own center — a nested path would instead
+// scale from the parent viewBox's origin without extra transform-origin
+// plumbing.
+function HeartIcon() {
+  return (
+    <svg width="18" height="16" viewBox="0 0 32 28" fill="none" aria-hidden="true">
+      <path
+        d="M16,28 C16,28 0,17 0,8 C0,3.58 3.58,0 8,0 C11.5,0 14.5,2 16,5 C17.5,2 20.5,0 24,0 C28.42,0 32,3.58 32,8 C32,17 16,28 16,28 Z"
+        style={{
+          fill: "rgba(var(--oxblood-rgb), 0.12)",
+          stroke: "var(--oxblood)",
+          strokeWidth: 2,
+        }}
+      />
+    </svg>
+  );
+}
+
 function fieldsFromUser(user) {
   return {
     name: user?.name || "",
@@ -385,6 +404,22 @@ function Settings() {
               >
                 <EggIcon />
               </MotionDiv>
+              <MotionDiv
+                style={styles.easterEggHeartWrap}
+                animate={reduceMotion ? { scale: 1 } : { scale: [1, 1.15, 1] }}
+                transition={
+                  reduceMotion
+                    ? { duration: 0.3 }
+                    : {
+                        duration: 0.8,
+                        repeat: Infinity,
+                        times: [0, 0.25, 1],
+                        ease: ["easeOut", "easeInOut"],
+                      }
+                }
+              >
+                <HeartIcon />
+              </MotionDiv>
             </div>
             <p style={styles.easterEggText}>You made it to the bottom. Not everyone does.</p>
           </MotionDiv>
@@ -568,6 +603,18 @@ input: {
     position: "relative",
     zIndex: 1,
     display: "flex",
+  },
+
+  // Fixed-position overlay (not a flex sibling) so it sits on top of the
+  // egg rather than beside it — nudged down from dead-center into the
+  // egg's fuller lower half, where the shape actually has the room.
+  easterEggHeartWrap: {
+    position: "absolute",
+    width: "18px",
+    height: "16px",
+    left: "35px",
+    top: "42px",
+    zIndex: 2,
   },
 
   easterEggText: {
