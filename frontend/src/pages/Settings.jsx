@@ -11,6 +11,27 @@ import { useAuth } from "../context/AuthContext";
 import { ApiError } from "../lib/api";
 import { estimateTargets } from "../lib/targets";
 import { cmToFeetInches, feetInchesToCm, kgToLb, lbToKg } from "../lib/units";
+import { reduceMotion } from "../lib/motion";
+import AmbientGlow from "../components/AmbientGlow";
+
+// Minimal egg silhouette for the scroll-to-bottom reveal — narrow rounded
+// top, fuller rounded bottom, no illustrative detail. Fill/stroke reuse the
+// same translucent-oxblood-fill-plus-outline language as iconCircle/badge
+// elsewhere, so it reads as native chrome rather than a one-off graphic.
+function EggIcon() {
+  return (
+    <svg width="44" height="55" viewBox="0 0 64 80" fill="none" aria-hidden="true">
+      <path
+        d="M32,4 C46,4 58,28 58,50 C58,68 46,78 32,78 C18,78 6,68 6,50 C6,28 18,4 32,4 Z"
+        style={{
+          fill: "rgba(var(--oxblood-rgb), 0.12)",
+          stroke: "var(--oxblood)",
+          strokeWidth: 1.75,
+        }}
+      />
+    </svg>
+  );
+}
 
 function fieldsFromUser(user) {
   return {
@@ -351,8 +372,21 @@ function Settings() {
             transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
             onViewportEnter={() => localStorage.setItem(EASTER_EGG_KEY, "true")}
           >
-            <Check size={14} strokeWidth={2.5} />
-            You made it to the bottom. Not everyone does.
+            <div style={styles.easterEggGlowWrap}>
+              <AmbientGlow active />
+              <MotionDiv
+                style={styles.easterEggIconWrap}
+                animate={reduceMotion ? { scale: 1 } : { scale: [1, 1.035, 1] }}
+                transition={
+                  reduceMotion
+                    ? { duration: 0.3 }
+                    : { duration: 2.4, repeat: Infinity, ease: "easeInOut" }
+                }
+              >
+                <EggIcon />
+              </MotionDiv>
+            </div>
+            <p style={styles.easterEggText}>You made it to the bottom. Not everyone does.</p>
           </MotionDiv>
         )}
       </div>
@@ -506,17 +540,38 @@ input: {
   },
 
   // Quiet, understated on purpose — a reward for the attentive few, not an
-  // alert or a call to action, so it deliberately doesn't use the oxblood
-  // accent the rest of the page reserves for that.
+  // alert or a call to action. Unboxed (no card/pill chrome) so it reads as
+  // a discovered moment rather than another UI element on the page.
   easterEgg: {
-    display: "inline-flex",
+    display: "flex",
+    flexDirection: "column",
     alignItems: "center",
-    gap: "8px",
-    marginTop: "28px",
-    padding: "10px 16px",
-    borderRadius: "var(--radius-full)",
-    background: "var(--paper)",
-    border: "1px solid var(--line)",
+    gap: "10px",
+    marginTop: "36px",
+  },
+
+  // Sized larger than the egg itself so AmbientGlow's halo has room to
+  // breathe around it instead of clipping tight to the icon's edges.
+  easterEggGlowWrap: {
+    position: "relative",
+    width: "88px",
+    height: "88px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  // The proven stacking fix — without an explicit position/zIndex here the
+  // egg paints under AmbientGlow's positioned z-index:0 layer instead of
+  // over it.
+  easterEggIconWrap: {
+    position: "relative",
+    zIndex: 1,
+    display: "flex",
+  },
+
+  easterEggText: {
+    margin: 0,
     color: "var(--graphite)",
     fontSize: "13px",
   },
