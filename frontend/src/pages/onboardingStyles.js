@@ -103,6 +103,52 @@ export const getOnboardingStyles = (isMobile) => ({
     maxWidth: "400px",
   },
 
+  revealHero: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    marginBottom: "18px",
+  },
+
+  revealHeroValue: {
+    fontFamily: "var(--font-display)",
+    fontSize: isMobile ? "56px" : "68px",
+    fontWeight: "800",
+    lineHeight: "1",
+    color: OXBLOOD_STRONG,
+    fontVariantNumeric: "tabular-nums",
+  },
+
+  revealHeroUnit: {
+    fontFamily: "var(--font-mono)",
+    fontSize: "13px",
+    letterSpacing: "0.06em",
+    textTransform: "uppercase",
+    color: GRAPHITE,
+    marginTop: "6px",
+  },
+
+  revealStatsRow: {
+    display: "flex",
+    gap: "10px",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    marginBottom: "24px",
+  },
+
+  revealStat: {
+    display: "flex",
+    alignItems: "center",
+    gap: "7px",
+    padding: "9px 14px",
+    borderRadius: "var(--radius-full)",
+    background: PAPER_RAISED,
+    border: `1px solid ${LINE}`,
+    color: INK,
+    fontSize: "13px",
+    fontWeight: "600",
+  },
+
   optionGrid: {
     width: "100%",
     display: "flex",
