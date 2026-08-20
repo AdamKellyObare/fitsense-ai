@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { authApi, clearInMemoryAuth, setSessionExpiredHandler } from "../lib/api";
+import { authApi, clearInMemoryAuth, hydrateNativeSession, setSessionExpiredHandler } from "../lib/api";
 
 const AuthContext = createContext(null);
 
@@ -9,11 +9,18 @@ export function AuthProvider({ children }) {
   const [sessionMessage, setSessionMessage] = useState("");
 
   useEffect(() => {
-    authApi
-      .me()
-      .then(setUser)
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
+    // No-ops on web. On native, repopulates the in-memory refresh token
+    // from the Keychain/Keystore before the first /auth/me check — without
+    // this, a fresh process (e.g. after a force-quit) has nothing to fall
+    // back on when /auth/me 401s, and the user gets logged out even though
+    // their session is still genuinely valid server-side.
+    hydrateNativeSession().finally(() => {
+      authApi
+        .me()
+        .then(setUser)
+        .catch(() => setUser(null))
+        .finally(() => setLoading(false));
+    });
   }, []);
 
   // api.js calls this when a refresh attempt itself fails — the session is

@@ -1,7 +1,52 @@
+import { Capacitor } from "@capacitor/core";
+import { SecureStorage } from "@aparajita/capacitor-secure-storage";
+
 // ?? (not ||) matters here: the production build sets VITE_API_URL="" on
 // purpose (same-origin requests once frontend/backend share a deployment),
 // and "" is falsy — || would wrongly fall back to the dev default below.
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+
+// Only ever holds the refresh token — the one credential that actually
+// needs to survive a force-quit. Access/CSRF tokens are cheap to reobtain
+// via a single silent refresh call, so persisting those too would just be
+// more sensitive material sitting in the Keychain/Keystore for no benefit.
+const REFRESH_TOKEN_STORAGE_KEY = "fitsense_refresh_token";
+
+// A refresh token authenticating one specific installation syncing to a
+// user's other Apple devices via iCloud Keychain isn't the behavior we
+// want — each install should hold its own. Set once; applies to every
+// operation on this plugin for the life of the process. No-ops on web
+// (SecureStorage's own web implementation isn't used here at all).
+if (Capacitor.isNativePlatform()) {
+  SecureStorage.setSynchronize(false).catch(() => {});
+}
+
+function persistRefreshToken(token) {
+  if (!Capacitor.isNativePlatform()) return;
+  // Fire-and-forget: this is just persistence for the *next* cold start,
+  // not something the current request should wait on or fail over.
+  SecureStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, token).catch(() => {});
+}
+
+function clearPersistedRefreshToken() {
+  if (!Capacitor.isNativePlatform()) return;
+  SecureStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY).catch(() => {});
+}
+
+// Called once by AuthContext before its first /auth/me check — a fresh
+// native process otherwise has an empty refreshTokenMemory and nothing to
+// fall back on, which is exactly the "force-quit logs you out" gap this
+// exists to close.
+export async function hydrateNativeSession() {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    const stored = await SecureStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+    if (stored) refreshTokenMemory = stored;
+  } catch {
+    // No stored token, or the OS declined to release it — same as a
+    // logged-out cold start either way.
+  }
+}
 
 function getCookie(name) {
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
@@ -44,20 +89,18 @@ let accessTokenMemory = null;
 // same ITP-related persistence problem as the access_token cookie did — an
 // idle session's silent-refresh attempt came back 401 because the cookie
 // itself wasn't present on the request. Same fix: hold it in memory only
-// (never persisted, per the same rule as the access token) and send it
-// explicitly to /auth/refresh instead of relying on the cookie.
-//
-// This does NOT survive a real force-quit-and-relaunch — a fresh process
-// has empty memory, so there's currently no way to silently restore a
-// session across an actual app restart. That's a known, deliberately
-// deferred gap (would need native secure storage — Keychain/Keystore — to
-// solve properly) tracked as a pre-launch item, not fixed here.
+// and send it explicitly to /auth/refresh instead of relying on the
+// cookie. On native, this is also mirrored into the Keychain/Keystore (see
+// persistRefreshToken/hydrateNativeSession above) — this in-memory copy
+// stays the one actually sent on every request either way; secure storage
+// only exists to repopulate this variable on a fresh process.
 let refreshTokenMemory = null;
 
 export function clearInMemoryAuth() {
   csrfTokenMemory = null;
   accessTokenMemory = null;
   refreshTokenMemory = null;
+  clearPersistedRefreshToken();
 }
 
 // Registered by AuthContext so api.js (a plain module, no React access) can
@@ -105,7 +148,15 @@ async function rawFetch(path, { method = "GET", body } = {}) {
   if (headerAccessToken) accessTokenMemory = headerAccessToken;
 
   const headerRefreshToken = res.headers.get("x-refresh-token");
-  if (headerRefreshToken) refreshTokenMemory = headerRefreshToken;
+  if (headerRefreshToken) {
+    refreshTokenMemory = headerRefreshToken;
+    // The backend rotates the refresh token on every use (old one is
+    // revoked server-side), so this has to run on every issuance — login,
+    // register, AND every /auth/refresh — not just at login. Persisting
+    // only the first token would mean the next cold start tries to use one
+    // that's already been revoked.
+    persistRefreshToken(headerRefreshToken);
+  }
 
   if (res.status === 204) return { ok: true, status: 204, data: null };
 
