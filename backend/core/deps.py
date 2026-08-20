@@ -40,6 +40,18 @@ async def require_csrf(request: Request) -> None:
     if _bearer_token(request):
         return
 
+    # Same reasoning, for the one other place a request carries its own
+    # non-forgeable proof instead of an Authorization header: native's
+    # cold-start call to /auth/refresh (see lib/api.js's hydrateNativeSession
+    # + persistRefreshToken), sent before the app has ever obtained an
+    # access token this process to use as Authorization instead. A forging
+    # site can't read or attach this header either — it's not a cookie the
+    # browser auto-sends — and an invalid/expired/revoked value is rejected
+    # by /auth/refresh's own lookup regardless of this check. Scoped to this
+    # one path specifically, since no other route ever expects this header.
+    if request.url.path == "/auth/refresh" and request.headers.get("x-refresh-token"):
+        return
+
     cookie_value = request.cookies.get(CSRF_COOKIE)
     header_value = request.headers.get(CSRF_HEADER)
     if not csrf_matches(cookie_value, header_value):
