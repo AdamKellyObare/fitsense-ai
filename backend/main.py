@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -13,6 +14,13 @@ from api.meals import router as meals_router
 from api.weight import router as weight_router
 from core.config import settings
 from core.limiter import limiter
+
+# Without this, logger.info() calls anywhere in the app (this file's own
+# usage-tracking in services/photo_analyzer.py included) are silently
+# dropped — Python's logging module only shows WARNING+ by default when
+# nothing has configured a handler, even though uvicorn's own request logs
+# appear regardless since uvicorn configures its own loggers separately.
+logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
 
 app = FastAPI()
 

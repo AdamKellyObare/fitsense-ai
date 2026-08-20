@@ -156,6 +156,27 @@ function App() {
     }
   };
 
+  // Shares previewLoading/previewResult with previewMeal above rather than
+  // introducing its own state — a photo analysis IS a preview, just filled
+  // from an image instead of typed text, and feeds the exact same
+  // review-before-log panel and "Log This Meal" button.
+  const analyzePhoto = async (file) => {
+    setPreviewLoading(true);
+    setPreviewError("");
+    setResult("");
+    setError("");
+
+    try {
+      const preview = await mealsApi.analyzePhoto(file);
+      setFood(preview.food);
+      setPreviewResult(preview);
+    } catch (err) {
+      setPreviewError(err instanceof ApiError ? err.message : "Failed to analyze photo.");
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
   const logPreviewedMeal = async () => {
     if (!previewResult) return;
 
@@ -303,6 +324,7 @@ function App() {
                           loading={loading}
                           onPreview={previewMeal}
                           previewLoading={previewLoading}
+                          onPhotoSelect={analyzePhoto}
                         />
 
                         {result && <div style={styles.result}>{result}</div>}

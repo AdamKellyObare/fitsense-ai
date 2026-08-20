@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import List
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,8 +14,14 @@ from models.meal import Meal
 from models.user import User
 from schemas.meal import MealCreate, MealPreview, MealPublic, MealUpdate
 from services.ai_provider import estimate_calories
+from services.mock_photo_analyzer import analyze_photo_with_mock
+from services.photo_analyzer import analyze_photo_with_openai
 from services.photo_generator import generate_meal_photo
 from services.photo_matcher import pick_photo_key
+
+# Comfortably above any reasonable phone-camera photo (usually 2-8MB) while
+# still ruling out someone deliberately posting an oversized file.
+_MAX_PHOTO_BYTES = 15 * 1024 * 1024
 
 router = APIRouter(prefix="/meals", tags=["meals"])
 
@@ -91,6 +97,39 @@ async def preview_meal(
     estimate = estimate_calories(payload.food)
     return MealPreview(
         food=payload.food,
+        goal=current_user.goal,
+        calories=estimate["calories"],
+        protein=estimate["protein"],
+        carbs=estimate["carbs"],
+        fat=estimate["fat"],
+        source="openai" if settings.USE_REAL_AI else "mock",
+    )
+
+
+@router.post("/analyze-photo", response_model=MealPreview)
+async def analyze_meal_photo(
+    image: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    _: None = Depends(require_csrf),
+) -> MealPreview:
+    # No db.add/commit — same "preview, nothing persisted" contract as
+    # POST /meals/preview, just fed by a photo instead of typed text. Still
+    # requires CSRF for the same reason: a real-cost external call even
+    # without a DB write.
+    if not (image.content_type or "").startswith("image/"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File must be an image")
+
+    image_bytes = await image.read()
+    if len(image_bytes) > _MAX_PHOTO_BYTES:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Image too large")
+
+    if settings.USE_REAL_AI:
+        estimate = await analyze_photo_with_openai(image_bytes)
+    else:
+        estimate = await analyze_photo_with_mock(image_bytes)
+
+    return MealPreview(
+        food=estimate["food"],
         goal=current_user.goal,
         calories=estimate["calories"],
         protein=estimate["protein"],

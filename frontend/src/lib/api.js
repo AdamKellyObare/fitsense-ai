@@ -72,7 +72,11 @@ export function setSessionExpiredHandler(handler) {
 }
 
 async function rawFetch(path, { method = "GET", body } = {}) {
-  const headers = { "Content-Type": "application/json" };
+  // FormData (photo uploads) must NOT get a hand-set Content-Type — the
+  // browser needs to add its own multipart boundary, which only happens if
+  // the header is left for fetch to set itself.
+  const isFormData = body instanceof FormData;
+  const headers = isFormData ? {} : { "Content-Type": "application/json" };
 
   if (accessTokenMemory) headers["Authorization"] = `Bearer ${accessTokenMemory}`;
 
@@ -91,7 +95,7 @@ async function rawFetch(path, { method = "GET", body } = {}) {
     method,
     headers,
     credentials: "include",
-    body: body ? JSON.stringify(body) : undefined,
+    body: isFormData ? body : body ? JSON.stringify(body) : undefined,
   });
 
   const headerToken = res.headers.get("x-csrf-token");
@@ -164,6 +168,14 @@ export const mealsApi = {
   // and running a second real AI estimate.
   create: (food, precomputed) => apiFetch("/meals", { method: "POST", body: { food, ...precomputed } }),
   preview: (food) => apiFetch("/meals/preview", { method: "POST", body: { food } }),
+  // Same MealPreview shape as preview() above (food/calories/protein/carbs/
+  // fat/source) — the caller feeds the response into the exact same
+  // review-before-log state either way.
+  analyzePhoto: (imageFile) => {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+    return apiFetch("/meals/analyze-photo", { method: "POST", body: formData });
+  },
   update: (id, { food }) => apiFetch(`/meals/${id}`, { method: "PATCH", body: { food } }),
   remove: (id) => apiFetch(`/meals/${id}`, { method: "DELETE" }),
 };
