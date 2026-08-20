@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Beef, Flame, Sparkles, Target, Trophy } from "lucide-react";
 import WeeklySummary from "../components/WeeklySummary";
+import WeightTrend from "../components/WeightTrend";
 
 const MotionDiv = motion.div;
 
@@ -92,6 +93,10 @@ function Analytics({ meals, calorieTarget }) {
 
       <div style={styles.chartCard}>
         <WeeklySummary meals={meals} calorieTarget={calorieTarget} />
+      </div>
+
+      <div style={{ ...styles.chartCard, marginTop: "20px" }}>
+        <WeightTrend />
       </div>
 
       <MotionDiv style={styles.insightGrid} variants={fadeRiseGroup} initial="hidden" animate="visible">

@@ -58,6 +58,7 @@ function fieldsFromUser(user) {
     age: user?.age ?? "",
     height: user?.height_cm ?? "",
     weight: user?.weight_kg ?? "",
+    targetWeight: user?.target_weight_kg ?? "",
     sex: user?.sex || "",
     activityLevel: user?.activity_level || "moderate",
     goal: user?.goal || "maintenance",
@@ -72,9 +73,14 @@ function fieldsFromUser(user) {
 // Display-only imperial state, derived from the canonical metric fields —
 // only recomputed at load/discard/toggle time, never on every render (that
 // would reformat the input mid-keystroke and fight the user's typing).
-function imperialFromMetric(heightCm, weightKg) {
+function imperialFromMetric(heightCm, weightKg, targetWeightKg) {
   const { feet, inches } = cmToFeetInches(heightCm);
-  return { heightFeet: feet, heightInches: inches, weightLb: kgToLb(weightKg) };
+  return {
+    heightFeet: feet,
+    heightInches: inches,
+    weightLb: kgToLb(weightKg),
+    targetWeightLb: kgToLb(targetWeightKg),
+  };
 }
 
 function Settings() {
@@ -89,7 +95,7 @@ function Settings() {
   const [easterEggAlreadySeen] = useState(() => localStorage.getItem(EASTER_EGG_KEY) === "true");
 
   const [units, setUnits] = useState(() => localStorage.getItem("fitsense_units") || "metric");
-  const [imperial, setImperial] = useState(() => imperialFromMetric(fields.height, fields.weight));
+  const [imperial, setImperial] = useState(() => imperialFromMetric(fields.height, fields.weight, fields.targetWeight));
 
   useEffect(() => {
     localStorage.setItem("fitsense_units", units);
@@ -101,7 +107,7 @@ function Settings() {
       if (next === "imperial") {
         // Re-derive from the current canonical metric value so the display
         // never shows anything stale from before the last toggle.
-        setImperial(imperialFromMetric(fields.height, fields.weight));
+        setImperial(imperialFromMetric(fields.height, fields.weight, fields.targetWeight));
       }
       return next;
     });
@@ -122,6 +128,12 @@ function Settings() {
     const value = e.target.value;
     setImperial((prev) => ({ ...prev, weightLb: value }));
     setFields((prev) => ({ ...prev, weight: lbToKg(value) }));
+  };
+
+  const setTargetWeightImperial = (e) => {
+    const value = e.target.value;
+    setImperial((prev) => ({ ...prev, targetWeightLb: value }));
+    setFields((prev) => ({ ...prev, targetWeight: lbToKg(value) }));
   };
 
   const autoCalculate = () => {
@@ -159,6 +171,7 @@ function Settings() {
         age: fields.age === "" ? null : Number(fields.age),
         height_cm: fields.height === "" ? null : Number(fields.height),
         weight_kg: fields.weight === "" ? null : Number(fields.weight),
+        target_weight_kg: fields.targetWeight === "" ? null : Number(fields.targetWeight),
         sex: fields.sex || null,
         activity_level: fields.activityLevel,
         goal: fields.goal,
@@ -183,7 +196,7 @@ function Settings() {
   const discardChanges = () => {
     const reset = fieldsFromUser(user);
     setFields(reset);
-    setImperial(imperialFromMetric(reset.height, reset.weight));
+    setImperial(imperialFromMetric(reset.height, reset.weight, reset.targetWeight));
     setStatus(null);
   };
 
@@ -282,6 +295,18 @@ function Settings() {
             <div style={styles.fieldGroup}>
               <label style={styles.fieldLabel}>Weight (lb)</label>
               <input style={styles.input} value={imperial.weightLb} onChange={setWeightImperial} />
+            </div>
+          )}
+
+          {units === "metric" ? (
+            <div style={styles.fieldGroup}>
+              <label style={styles.fieldLabel}>Target weight (kg, optional)</label>
+              <input style={styles.input} value={fields.targetWeight} onChange={setField("targetWeight")} />
+            </div>
+          ) : (
+            <div style={styles.fieldGroup}>
+              <label style={styles.fieldLabel}>Target weight (lb, optional)</label>
+              <input style={styles.input} value={imperial.targetWeightLb} onChange={setTargetWeightImperial} />
             </div>
           )}
 

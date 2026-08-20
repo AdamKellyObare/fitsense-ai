@@ -168,4 +168,16 @@ export const mealsApi = {
   remove: (id) => apiFetch(`/meals/${id}`, { method: "DELETE" }),
 };
 
+export const weightApi = {
+  list: () => apiFetch("/weight-entries"),
+  // loggedDate (optional): "YYYY-MM-DD", matching localDateKey()'s format —
+  // omitted, the backend defaults to its own today.
+  log: (weightKg, loggedDate) =>
+    apiFetch("/weight-entries", {
+      method: "POST",
+      body: { weight_kg: weightKg, ...(loggedDate ? { logged_date: loggedDate } : {}) },
+    }),
+  remove: (id) => apiFetch(`/weight-entries/${id}`, { method: "DELETE" }),
+};
+
 export { ApiError, apiFetch };

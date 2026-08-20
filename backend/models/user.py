@@ -41,6 +41,7 @@ class User(Base):
     age: Mapped[Optional[int]]
     height_cm: Mapped[Optional[float]]
     weight_kg: Mapped[Optional[float]]
+    target_weight_kg: Mapped[Optional[float]]
     sex: Mapped[Optional[Sex]] = mapped_column(Enum(Sex, name="sex"), nullable=True)
     activity_level: Mapped[ActivityLevel] = mapped_column(
         Enum(ActivityLevel, name="activity_level"), default=ActivityLevel.moderate

@@ -27,6 +27,7 @@ class UserPublic(BaseModel):
     age: Optional[int]
     height_cm: Optional[float]
     weight_kg: Optional[float]
+    target_weight_kg: Optional[float]
     sex: Optional[Sex]
     activity_level: ActivityLevel
     goal: Goal
@@ -45,6 +46,7 @@ class UserUpdate(BaseModel):
     age: Optional[int] = Field(default=None, ge=0, le=120)
     height_cm: Optional[float] = Field(default=None, ge=0, le=300)
     weight_kg: Optional[float] = Field(default=None, ge=0, le=500)
+    target_weight_kg: Optional[float] = Field(default=None, ge=0, le=500)
     sex: Optional[Sex] = None
     activity_level: Optional[ActivityLevel] = None
     goal: Optional[Goal] = None

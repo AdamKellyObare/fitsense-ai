@@ -10,6 +10,7 @@ from slowapi.middleware import SlowAPIMiddleware
 
 from api.auth import router as auth_router
 from api.meals import router as meals_router
+from api.weight import router as weight_router
 from core.config import settings
 from core.limiter import limiter
 
@@ -33,12 +34,13 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(meals_router)
+app.include_router(weight_router)
 
 # Built frontend, copied here by the Render build step (see render.yaml).
 # Absent in local dev, where the frontend runs separately via `npm run dev`
 # on :5173 and the CORS middleware above handles the cross-origin calls.
 STATIC_DIST = Path(__file__).resolve().parent / "static_dist"
-_RESERVED_PREFIXES = {"auth", "meals"}
+_RESERVED_PREFIXES = {"auth", "meals", "weight-entries"}
 
 if STATIC_DIST.is_dir():
     app.mount("/assets", StaticFiles(directory=STATIC_DIST / "assets"), name="frontend-assets")
