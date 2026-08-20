@@ -30,9 +30,9 @@ function PhotoScanOverlay({ active }) {
           animate={{ top: "108%", opacity: [0, 1, 1, 0] }}
           exit={{ opacity: 0, transition: { duration: 0.2 } }}
           transition={{
-            top: { duration: 1.8, repeat: Infinity, repeatType: "loop", ease: "linear" },
+            top: { duration: 3.6, repeat: Infinity, repeatType: "loop", ease: "linear" },
             opacity: {
-              duration: 1.8,
+              duration: 3.6,
               repeat: Infinity,
               repeatType: "loop",
               ease: "linear",
@@ -40,9 +40,15 @@ function PhotoScanOverlay({ active }) {
             },
           }}
         >
-          <div style={{ ...styles.dot, top: "-18px", opacity: 0.14 }} />
-          <div style={{ ...styles.dot, top: "-12px", opacity: 0.28 }} />
-          <div style={{ ...styles.dot, top: "-6px", opacity: 0.45 }} />
+          {/* Comet-tail: gaps between dots widen and opacity/size taper
+              geometrically further back, so the trail thins into nothing
+              rather than cutting off after a few evenly-spaced dots. */}
+          <div style={{ ...styles.dot, top: "-61px", opacity: 0.02, width: "2px", height: "2px" }} />
+          <div style={{ ...styles.dot, top: "-46px", opacity: 0.04, width: "2px", height: "2px" }} />
+          <div style={{ ...styles.dot, top: "-33px", opacity: 0.08, width: "2.5px", height: "2.5px" }} />
+          <div style={{ ...styles.dot, top: "-22px", opacity: 0.15, width: "2.5px", height: "2.5px" }} />
+          <div style={{ ...styles.dot, top: "-13px", opacity: 0.26 }} />
+          <div style={{ ...styles.dot, top: "-6px", opacity: 0.42 }} />
           <div style={styles.line} />
         </MotionDiv>
       )}

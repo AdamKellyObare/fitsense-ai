@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Camera as CameraIcon } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
@@ -7,12 +7,35 @@ function FoodInput({ food, setFood, onSubmit, loading, onPreview, previewLoading
   const fileInputRef = useRef(null);
   const busy = loading || previewLoading;
 
+  // Captured/selected but not yet confirmed — onPhotoSelect (and therefore
+  // App.jsx's analyzePhoto) only ever fires once the user taps "Use Photo"
+  // below, not the moment a photo is obtained.
+  const [pendingFile, setPendingFile] = useState(null);
+  const [pendingPreviewUrl, setPendingPreviewUrl] = useState(null);
+
+  useEffect(() => {
+    return () => {
+      if (pendingPreviewUrl) URL.revokeObjectURL(pendingPreviewUrl);
+    };
+  }, [pendingPreviewUrl]);
+
+  const setPending = (file) => {
+    setPendingFile(file);
+    setPendingPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const clearPending = () => {
+    if (pendingPreviewUrl) URL.revokeObjectURL(pendingPreviewUrl);
+    setPendingFile(null);
+    setPendingPreviewUrl(null);
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     // Reset immediately so picking the exact same file again still fires
     // onChange next time — the browser otherwise treats it as "unchanged".
     e.target.value = "";
-    if (file) onPhotoSelect(file);
+    if (file) setPending(file);
   };
 
   const handlePhotoButtonClick = async () => {
@@ -34,11 +57,49 @@ function FoodInput({ food, setFood, onSubmit, loading, onPreview, previewLoading
         quality: 80,
       });
       const blob = await (await fetch(photo.webPath)).blob();
-      onPhotoSelect(new File([blob], "meal-photo.jpg", { type: blob.type || "image/jpeg" }));
+      setPending(new File([blob], "meal-photo.jpg", { type: blob.type || "image/jpeg" }));
     } catch {
       // Cancelled or denied — nothing to do.
     }
   };
+
+  const confirmPhoto = () => {
+    const file = pendingFile;
+    // Clear first (not after) — onPhotoSelect kicks off analysis
+    // synchronously-ish via App.jsx state, and there's no reason for the
+    // confirm UI to still be mounted while that's happening.
+    setPendingFile(null);
+    setPendingPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    onPhotoSelect(file);
+  };
+
+  const retakePhoto = () => {
+    clearPending();
+    handlePhotoButtonClick();
+  };
+
+  if (pendingFile) {
+    return (
+      <div>
+        <div style={styles.confirmPreviewWrap}>
+          <img src={pendingPreviewUrl} alt="" style={styles.confirmPreviewImg} />
+        </div>
+
+        <div style={styles.buttonRow}>
+          <button onClick={confirmPhoto} style={styles.button} type="button">
+            Use Photo
+          </button>
+
+          <button onClick={retakePhoto} style={styles.previewButton} type="button">
+            Retake
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -135,6 +196,25 @@ const styles = {
 
   hiddenFileInput: {
     display: "none",
+  },
+
+  // Same 280px/4:3/rounded treatment as App.jsx's scan-loading preview —
+  // this is the same photo shown a moment earlier, so it should read as
+  // one continuous flow rather than two different container styles.
+  confirmPreviewWrap: {
+    width: "100%",
+    maxWidth: "280px",
+    aspectRatio: "4 / 3",
+    borderRadius: "var(--radius-lg)",
+    overflow: "hidden",
+    margin: "0 auto 16px",
+  },
+
+  confirmPreviewImg: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    display: "block",
   },
 
   buttonRow: {
