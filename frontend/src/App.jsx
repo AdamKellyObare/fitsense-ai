@@ -11,6 +11,7 @@ import { ApiError, mealsApi } from "./lib/api";
 import { isToday } from "./lib/dates";
 
 import AmbientGlow from "./components/AmbientGlow";
+import PhotoScanOverlay from "./components/PhotoScanOverlay";
 import FoodInput from "./components/FoodInput";
 import MealHistory from "./components/MealHistory";
 import ProgressRing from "./components/ProgressRing";
@@ -56,6 +57,11 @@ function App() {
   const [previewResult, setPreviewResult] = useState(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState("");
+
+  // Object URL for the captured/selected photo — only ever shown during
+  // the analyzePhoto loading window (see the photo-preview block below),
+  // not carried into the review panel once analysis completes.
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState(null);
 
   const [water, setWater] = useState(() => {
     return Number(localStorage.getItem("fitsense_water") || 0);
@@ -117,6 +123,10 @@ function App() {
     setError("");
     setPreviewResult(null);
     setPreviewError("");
+    setPhotoPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
   };
 
   useEffect(() => {
@@ -176,6 +186,9 @@ function App() {
     setResult("");
     setError("");
 
+    const objectUrl = URL.createObjectURL(file);
+    setPhotoPreviewUrl(objectUrl);
+
     try {
       const preview = await mealsApi.analyzePhoto(file);
       setFood(preview.food);
@@ -184,6 +197,8 @@ function App() {
       setPreviewError(err instanceof ApiError ? err.message : "Failed to analyze photo.");
     } finally {
       setPreviewLoading(false);
+      URL.revokeObjectURL(objectUrl);
+      setPhotoPreviewUrl(null);
     }
   };
 
@@ -342,6 +357,14 @@ function App() {
                         <AmbientGlow active={loading || previewLoading} />
 
                         <div style={styles.aiWaitContent}>
+                        {photoPreviewUrl && (
+                          <div style={styles.photoPreviewWrap}>
+                            <img src={photoPreviewUrl} alt="" style={styles.photoPreviewImg} />
+                            <AmbientGlow active={previewLoading} />
+                            <PhotoScanOverlay active={previewLoading} />
+                          </div>
+                        )}
+
                         <FoodInput
                           food={food}
                           setFood={setFood}
@@ -708,6 +731,27 @@ const getStyles = (isMobile, isDesktop) => ({
   aiWaitContent: {
     position: "relative",
     zIndex: 1,
+  },
+
+  // Only ever mounted during the analyzePhoto loading window (see
+  // photoPreviewUrl in the component above) — reverts to the plain text
+  // review panel once analysis completes, same as the existing preview
+  // flow already does.
+  photoPreviewWrap: {
+    position: "relative",
+    width: "100%",
+    maxWidth: "280px",
+    aspectRatio: "4 / 3",
+    borderRadius: "var(--radius-lg)",
+    overflow: "hidden",
+    margin: "0 auto 16px",
+  },
+
+  photoPreviewImg: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    display: "block",
   },
 
   title: {
