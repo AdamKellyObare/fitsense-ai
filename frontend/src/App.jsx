@@ -8,6 +8,7 @@ import { useAuth } from "./context/AuthContext";
 import { useTheme } from "./hooks/useTheme";
 import { useViewport } from "./hooks/useViewport";
 import { ApiError, mealsApi } from "./lib/api";
+import { hapticGoalReached, hapticLogSuccess } from "./lib/haptics";
 import { isToday } from "./lib/dates";
 
 import AmbientGlow from "./components/AmbientGlow";
@@ -149,6 +150,7 @@ function App() {
         ...prevMeals,
         { ...newMeal, timestamp: newMeal.created_at },
       ]);
+      triggerLogHaptics(newMeal.calories);
       setResult(`Estimated calories for ${food}: ${newMeal.calories} kcal (${user.goal})`);
       setFood("");
     } catch (err) {
@@ -220,6 +222,7 @@ function App() {
         ...prevMeals,
         { ...newMeal, timestamp: newMeal.created_at },
       ]);
+      triggerLogHaptics(newMeal.calories);
       setResult(`Estimated calories for ${newMeal.food}: ${newMeal.calories} kcal (${user.goal})`);
       setPreviewResult(null);
       setFood("");
@@ -259,6 +262,23 @@ function App() {
 
   const caloriesRemaining =
     calorieTarget - totalCaloriesToday > 0 ? calorieTarget - totalCaloriesToday : 0;
+
+  // caloriesRemaining above is already clamped to 0, so it looks identical
+  // whether today's total just reached target or blew past it by 400kcal —
+  // can't detect a crossing from that value alone. Uses the raw (unclamped)
+  // before/after difference instead, computed from totalCaloriesToday as of
+  // this render (i.e. before the meal being logged is added to `meals`),
+  // so the notification haptic only fires on the log that actually pushes
+  // the total from under-target to at-or-over — not on a later over-target
+  // meal, and not on a page reload where the total is already over.
+  const triggerLogHaptics = (mealCalories) => {
+    hapticLogSuccess();
+    const rawRemainingBefore = calorieTarget - totalCaloriesToday;
+    const rawRemainingAfter = rawRemainingBefore - (mealCalories || 0);
+    if (rawRemainingBefore > 0 && rawRemainingAfter <= 0) {
+      hapticGoalReached();
+    }
+  };
 
   const waterProgressPercent =
     user?.water_target_l > 0 ? Math.min((water / user.water_target_l) * 100, 100) : 0;
