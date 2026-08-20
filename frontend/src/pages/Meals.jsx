@@ -17,7 +17,7 @@ const fadeRiseItem = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
 };
 
-function Meals({ meals, setMeals }) {
+function Meals({ meals, setMeals, deleteMeal, clearStaleMealBanners }) {
   const [search, setSearch] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [editingId, setEditingId] = useState(null);
@@ -36,11 +36,17 @@ function Meals({ meals, setMeals }) {
     return matchesSearch && matchesDate;
   });
 
-  const deleteMeal = async (id) => {
+  // deleteMeal (the mutation + setMeals + clearing Overview's stale
+  // banners) is the same shared function App.jsx uses for its own meal
+  // history — this used to be a separate, fully duplicated copy here,
+  // which is exactly how a stale "Estimated calories for..." banner could
+  // survive a delete made from this page specifically. This wrapper just
+  // keeps this page's own local error display working the way it already
+  // did — deleteMeal throws rather than catching internally.
+  const handleDelete = async (id) => {
     setError("");
     try {
-      await mealsApi.remove(id);
-      setMeals((prevMeals) => prevMeals.filter((meal) => meal.id !== id));
+      await deleteMeal(id);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to delete meal.");
     }
@@ -66,6 +72,10 @@ function Meals({ meals, setMeals }) {
         )
       );
       setEditingId(null);
+      // Same reasoning as delete — an edited meal's food/macros can make
+      // Overview's "Estimated calories for..." banner describe something
+      // that's no longer accurate.
+      clearStaleMealBanners();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to update meal.");
     }
@@ -164,7 +174,7 @@ function Meals({ meals, setMeals }) {
                     <button onClick={() => startEdit(meal)} style={styles.editButton}>
                       <Pencil size={15} strokeWidth={2.4} /> Edit
                     </button>
-                    <button onClick={() => deleteMeal(meal.id)} style={styles.deleteButton}>
+                    <button onClick={() => handleDelete(meal.id)} style={styles.deleteButton}>
                       <Trash2 size={15} strokeWidth={2.4} /> Delete
                     </button>
                   </div>

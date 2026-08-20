@@ -106,12 +106,22 @@ function App() {
   // Keyed on the id specifically, not the whole user object: profile edits
   // (Settings) also call setUser with a new object for the same account,
   // and that shouldn't wipe an unrelated in-progress meal result.
-  useEffect(() => {
+  // Clears the "last action" banners (Overview's confirmation text, its
+  // error, and any in-progress preview) — state that describes a specific
+  // meal, which a delete or edit elsewhere can invalidate without this
+  // component ever knowing unless it's told. Deliberately leaves `food`
+  // (the in-progress text input) alone — only the session-change effect
+  // below needs to reset that.
+  const clearStaleMealBanners = () => {
     setResult("");
     setError("");
-    setFood("");
     setPreviewResult(null);
     setPreviewError("");
+  };
+
+  useEffect(() => {
+    clearStaleMealBanners();
+    setFood("");
   }, [user?.id]);
 
   const estimateCalories = async () => {
@@ -254,10 +264,25 @@ function App() {
     bulking: "You're bulking — make sure the extra calories are pulling their weight, not just carbs and fat.",
   };
 
+  // Single source of truth for the mutation — Meals.jsx used to keep its
+  // own separate copy of this exact logic, which is how the bug this fixes
+  // (a stale "Estimated calories for..." banner surviving a delete) could
+  // exist unnoticed on one call site while getting fixed on another.
+  // Deliberately throws rather than catching internally, so each call site
+  // below can handle/display the error the way that page already does.
   const deleteMeal = async (id) => {
+    await mealsApi.remove(id);
+    setMeals((prevMeals) => prevMeals.filter((meal) => meal.id !== id));
+    clearStaleMealBanners();
+  };
+
+  // MealHistory's delete button calls onDelete fire-and-forget (no
+  // await/catch of its own), so this wrapper has to catch here — same
+  // pattern as before, just now sitting on top of the shared mutation
+  // above instead of duplicating it.
+  const handleDeleteMeal = async (id) => {
     try {
-      await mealsApi.remove(id);
-      setMeals((prevMeals) => prevMeals.filter((meal) => meal.id !== id));
+      await deleteMeal(id);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to delete meal.");
     }
@@ -437,7 +462,7 @@ function App() {
                         viewport={{ once: true, margin: "-40px" }}
                         variants={fadeRiseItem}
                       >
-                        <MealHistory meals={meals} onDelete={deleteMeal} />
+                        <MealHistory meals={meals} onDelete={handleDeleteMeal} />
                       </MotionDiv>
                     </div>
 
@@ -511,7 +536,17 @@ function App() {
             }
           />
 
-          <Route path="/meals" element={<Meals meals={meals} setMeals={setMeals} />} />
+          <Route
+            path="/meals"
+            element={
+              <Meals
+                meals={meals}
+                setMeals={setMeals}
+                deleteMeal={deleteMeal}
+                clearStaleMealBanners={clearStaleMealBanners}
+              />
+            }
+          />
           <Route path="/analytics" element={<Analytics meals={meals} calorieTarget={calorieTarget} />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
