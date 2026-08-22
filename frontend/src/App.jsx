@@ -1,5 +1,5 @@
 // Force-refresh marker for Vercel deploy cache verification
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Beef, Droplet, Droplets, Eye, Flame, Sparkles, Wheat } from "lucide-react";
@@ -63,6 +63,21 @@ function App() {
   // the analyzePhoto loading window (see the photo-preview block below),
   // not carried into the review panel once analysis completes.
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState(null);
+
+  // True for ~1s right after a meal is successfully logged — lets
+  // ProgressRing distinguish "a meal just landed" from any other reason
+  // its value might change (editing/deleting a meal, switching days).
+  const [justLogged, setJustLogged] = useState(false);
+  const justLoggedTimeoutRef = useRef(null);
+
+  // A ref, not a fresh setTimeout each call — a second log within the 1s
+  // window should extend the window, not have the first log's timeout cut
+  // the second log's pulse off early.
+  const markJustLogged = () => {
+    setJustLogged(true);
+    if (justLoggedTimeoutRef.current) clearTimeout(justLoggedTimeoutRef.current);
+    justLoggedTimeoutRef.current = setTimeout(() => setJustLogged(false), 1000);
+  };
 
   const [water, setWater] = useState(() => {
     return Number(localStorage.getItem("fitsense_water") || 0);
@@ -151,6 +166,7 @@ function App() {
         { ...newMeal, timestamp: newMeal.created_at },
       ]);
       triggerLogHaptics(newMeal.calories);
+      markJustLogged();
       setResult(`Estimated calories for ${food}: ${newMeal.calories} kcal (${user.goal})`);
       setFood("");
     } catch (err) {
@@ -223,6 +239,7 @@ function App() {
         { ...newMeal, timestamp: newMeal.created_at },
       ]);
       triggerLogHaptics(newMeal.calories);
+      markJustLogged();
       setResult(`Estimated calories for ${newMeal.food}: ${newMeal.calories} kcal (${user.goal})`);
       setPreviewResult(null);
       setFood("");
@@ -518,6 +535,7 @@ function App() {
                           max={calorieTarget}
                           unit="kcal"
                           caption={`of ${calorieTarget} kcal goal`}
+                          justLogged={justLogged}
                         />
 
                       </div>
@@ -532,6 +550,7 @@ function App() {
                             unit="g"
                             caption={macroCaption(totalProteinToday, proteinTarget)}
                             showOverage
+                            justLogged={justLogged}
                           />
                           <div style={styles.macroRingLabel}>
                             <Beef size={13} strokeWidth={2.4} /> Protein
@@ -547,6 +566,7 @@ function App() {
                             unit="g"
                             caption={macroCaption(totalCarbsToday, carbTarget)}
                             showOverage
+                            justLogged={justLogged}
                           />
                           <div style={styles.macroRingLabel}>
                             <Wheat size={13} strokeWidth={2.4} /> Carbs
@@ -562,6 +582,7 @@ function App() {
                             unit="g"
                             caption={macroCaption(totalFatToday, fatTarget)}
                             showOverage
+                            justLogged={justLogged}
                           />
                           <div style={styles.macroRingLabel}>
                             <Droplets size={13} strokeWidth={2.4} /> Fat

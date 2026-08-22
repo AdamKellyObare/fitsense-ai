@@ -1,14 +1,53 @@
-import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
+import { motion, useAnimate } from "framer-motion";
 import { useCountUp } from "../hooks/useCountUp";
+import { reduceMotion } from "../lib/motion";
 
 const MotionCircle = motion.circle;
 
-function ProgressRing({ value, max, size = 176, strokeWidth = 14, unit, caption, showOverage = false }) {
+function ProgressRing({
+  value,
+  max,
+  size = 176,
+  strokeWidth = 14,
+  unit,
+  caption,
+  showOverage = false,
+  justLogged = false,
+}) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const percent = max > 0 ? Math.min(value / max, 1) : 0;
   const offset = circumference * (1 - percent);
   const displayValue = useCountUp(value);
+
+  // useAnimate (ref + imperative animate()), not useAnimation's controls-
+  // object indirection — the latter is documented as "Legacy" and its
+  // start() silently no-ops if the subscriber-list wiring doesn't attach
+  // (confirmed: the effect fired with the right values, .start() was
+  // called, and nothing ever animated). useAnimate operates directly on
+  // the DOM node via the scope ref instead, sidestepping that entirely.
+  //
+  // Also not a declarative animate={{scale:[...]}} prop — useCountUp's
+  // onUpdate fires on every animation frame while the number counts up, so
+  // a freshly-recreated inline keyframe array on each of those re-renders
+  // would restart/stutter the bump instead of playing once. This only
+  // fires when value has actually changed while justLogged is true,
+  // regardless of how many unrelated re-renders happen in between.
+  const [scope, animate] = useAnimate();
+  const prevValueRef = useRef(value);
+
+  useEffect(() => {
+    const changed = value !== prevValueRef.current;
+    prevValueRef.current = value;
+    if (changed && justLogged && !reduceMotion) {
+      // Deliberately shorter than the 0.9s ring-fill/0.8s count-up — a
+      // quick, quiet "kick" felt at the start rather than a bump that
+      // takes the full fill duration to resolve, which would read as
+      // effortful rather than a brief confirmation.
+      animate(scope.current, { scale: [1, 1.03, 1] }, { duration: 0.45, ease: [0.16, 1, 0.3, 1] });
+    }
+  }, [value, justLogged, animate, scope]);
 
   // Overage ring: a thin arc just outside the main ring, in a lower-opacity
   // shade of the same accent (intensity, not a new color) — represents how
@@ -22,7 +61,7 @@ function ProgressRing({ value, max, size = 176, strokeWidth = 14, unit, caption,
   const overageStrokeWidth = strokeWidth * 0.4;
 
   return (
-    <div style={{ ...styles.wrap, width: size, height: size }}>
+    <div ref={scope} style={{ ...styles.wrap, width: size, height: size }}>
       <svg width={size} height={size} style={{ overflow: "visible", transform: "rotate(-90deg)" }}>
         <circle
           cx={size / 2}
