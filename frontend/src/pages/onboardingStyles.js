@@ -13,9 +13,12 @@ const LINE = "#2a251c";
 export const getOnboardingStyles = (isMobile) => ({
   page: {
     position: "fixed",
+    // inset: 0 alone already fills the fixed positioning containing block
+    // in both dimensions — explicit width/height are redundant, and were
+    // set to 100vw/100vh, which mobile Safari's dynamic URL bar can
+    // compute wider/taller than the actual visible screen. Just inset: 0
+    // sidesteps the unit entirely rather than swapping to a "safer" one.
     inset: 0,
-    width: "100vw",
-    height: "100vh",
     background: PAPER,
     color: INK,
     fontFamily: "var(--font-body)",

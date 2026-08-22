@@ -7,6 +7,12 @@
 
 html {
   color-scheme: light dark;
+  /* Defense in depth, not the primary fix (that's the 100vw removals
+     elsewhere) — on mobile WebKit, html (not body) is often the element
+     that actually responds to a horizontal swipe gesture, so body's own
+     overflow-x: hidden below doesn't reliably stop page-level horizontal
+     scroll on its own once anything renders wider than the screen. */
+  overflow-x: hidden;
 }
 
 body {

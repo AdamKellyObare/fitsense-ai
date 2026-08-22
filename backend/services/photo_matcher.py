@@ -12,7 +12,14 @@ CATEGORY_KEYWORDS = {
     "red_meat": ["beef", "steak", "pork", "ribs", "meat", "lamb"],
     "salad": ["salad", "greens", "spinach", "kale", "veggie", "vegetable"],
     "grains": ["rice", "pasta", "noodle", "bread", "pizza", "quinoa", "potato", "naan", "spaghetti"],
-    "fruit": ["apple", "banana", "berry", "berries", "orange", "mango", "grape", "melon", "fruit", "kiwi", "pineapple"],
+    # Split out of "fruit" for the same reason meat got split above: the
+    # shared fruit pool's one single-item studio shot (an apple) reads as a
+    # specific, confidently-wrong fruit when it lands on an orange or
+    # banana — the four remaining photos are all mixed-produce platters
+    # that read as generically "fruit-like" regardless of which fruit was
+    # actually logged, so they stay shared.
+    "apple": ["apple"],
+    "fruit": ["banana", "berry", "berries", "orange", "mango", "grape", "melon", "fruit", "kiwi", "pineapple"],
 }
 
 PHOTO_COUNTS = {
@@ -22,11 +29,12 @@ PHOTO_COUNTS = {
     "red_meat": 5,
     "salad": 5,
     "grains": 5,
-    "fruit": 5,
+    "apple": 1,
+    "fruit": 4,
     "generic": 5,
 }
 
-CATEGORY_ORDER = ["breakfast", "fish", "poultry", "red_meat", "salad", "grains", "fruit"]
+CATEGORY_ORDER = ["breakfast", "fish", "poultry", "red_meat", "salad", "grains", "apple", "fruit"]
 
 
 def _match_category(food: str) -> str:

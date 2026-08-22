@@ -627,7 +627,11 @@ const getStyles = (isMobile, isDesktop) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    width: "100vw",
+    // 100% not 100vw — on mobile Safari, 100vw is computed against the
+    // layout viewport, which the dynamic URL bar can make wider than the
+    // actual visible screen, causing horizontal overflow. 100% tracks the
+    // real rendered parent width instead.
+    width: "100%",
     height: "100vh",
     background: "var(--paper)",
     color: "var(--ink)",
@@ -637,7 +641,7 @@ const getStyles = (isMobile, isDesktop) => ({
   page: {
     display: "flex",
     flexDirection: isDesktop ? "row" : "column",
-    width: "100vw",
+    width: "100%",
     minHeight: "100dvh",
     background: "var(--paper)",
     color: "var(--ink)",
